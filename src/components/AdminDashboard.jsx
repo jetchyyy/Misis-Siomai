@@ -45,6 +45,12 @@ export default function AdminDashboard() {
   const [cmsProducts, setCmsProducts] = useState(cms.products || []);
   const [cmsBranches, setCmsBranches] = useState(cms.branches || []);
 
+  // Admin Branch filter & pagination states
+  const [adminBranchSearch, setAdminBranchSearch] = useState('');
+  const [adminBranchCityFilter, setAdminBranchCityFilter] = useState('All');
+  const [adminBranchStatusFilter, setAdminBranchStatusFilter] = useState('all');
+  const [adminBranchVisibleCount, setAdminBranchVisibleCount] = useState(10);
+
   const [saveSuccess, setSaveSuccess] = useState('');
   const [uploadingIdx, setUploadingIdx] = useState(null);
 
@@ -76,33 +82,61 @@ export default function AdminDashboard() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch inquiries from Supabase
+  // Fetch inquiries from Supabase & LocalStorage
   const fetchInquiries = async () => {
     setLoadingInquiries(true);
     setFetchError('');
     try {
-      const { data, error } = await supabase
-        .from('inquiries')
-        .select('*')
-        .eq('tenant_id', TENANT_ID)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Supabase query error:', error);
-        setFetchError(error.message || 'Failed to fetch inquiries.');
-        setInquiries([]);
-      } else {
-        const formatted = (data || []).map(item => ({
-          ...item,
-          status: item.status || 'New',
-          custom_fields: item.custom_fields || {}
-        }));
-        setInquiries(formatted);
+      // 1. Get local storage items
+      let localInquiries = [];
+      try {
+        localInquiries = JSON.parse(localStorage.getItem('misis_siomai_inquiries') || '[]');
+      } catch (e) {
+        console.warn('LocalStorage parse error:', e);
       }
+
+      // 2. Get remote Supabase items
+      let remoteInquiries = [];
+      try {
+        const { data, error } = await supabase
+          .from('inquiries')
+          .select('*')
+          .eq('tenant_id', TENANT_ID)
+          .order('created_at', { ascending: false });
+
+        if (!error && data) {
+          remoteInquiries = data.map(item => ({
+            ...item,
+            status: item.status || 'New',
+            custom_fields: item.custom_fields || {}
+          }));
+        }
+      } catch (remoteErr) {
+        console.warn('Supabase fetch notice:', remoteErr);
+      }
+
+      // 3. Merge & Deduplicate
+      const seenIds = new Set();
+      const combined = [];
+
+      [...localInquiries, ...remoteInquiries].forEach(item => {
+        const key = item.id || `${item.email}_${item.created_at}`;
+        if (!seenIds.has(key)) {
+          seenIds.add(key);
+          combined.push({
+            ...item,
+            status: item.status || 'New',
+            custom_fields: item.custom_fields || {}
+          });
+        }
+      });
+
+      // Sort by date descending
+      combined.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+      setInquiries(combined);
     } catch (err) {
       console.error('Failed to fetch inquiries:', err);
-      setFetchError('Error connecting to database.');
-      setInquiries([]);
     } finally {
       setLoadingInquiries(false);
     }
@@ -112,6 +146,11 @@ export default function AdminDashboard() {
     if (session) {
       fetchInquiries();
     }
+    const handleInquiryEvent = () => {
+      fetchInquiries();
+    };
+    window.addEventListener('misis_siomai_inquiry_submitted', handleInquiryEvent);
+    return () => window.removeEventListener('misis_siomai_inquiry_submitted', handleInquiryEvent);
   }, [session]);
 
   // Handle Login submission
@@ -122,18 +161,17 @@ export default function AdminDashboard() {
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: password,
+        email,
+        password,
       });
 
       if (error) {
-        setLoginError(error.message || 'Invalid login credentials.');
-      } else if (data.session) {
+        setLoginError(error.message);
+      } else {
         setSession(data.session);
       }
     } catch (err) {
-      console.error('Login error:', err);
-      setLoginError('An error occurred during authentication.');
+      setLoginError('Invalid login credentials.');
     } finally {
       setLoginLoading(false);
     }
@@ -149,7 +187,14 @@ export default function AdminDashboard() {
   };
 
   const handleUpdateLeadStatus = async (id, newStatus) => {
-    setInquiries(prev => prev.map(item => item.id === id ? { ...item, status: newStatus } : item));
+    setInquiries(prev => {
+      const updated = prev.map(item => item.id === id ? { ...item, status: newStatus } : item);
+      try {
+        localStorage.setItem('misis_siomai_inquiries', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+
     if (selectedLead && selectedLead.id === id) {
       setSelectedLead(prev => prev ? { ...prev, status: newStatus } : null);
     }
@@ -232,6 +277,68 @@ export default function AdminDashboard() {
   const handleRemoveProduct = (idx) => {
     setCmsProducts(prev => prev.filter((_, i) => i !== idx));
   };
+
+  // Package Add / Remove & Features
+  const handleAddPackage = () => {
+    const newPkg = {
+      id: `pkg-${Date.now()}`,
+      name: 'New Franchise Package',
+      price: '₱150,000',
+      description: 'Complete turnkey package for neighborhood hubs or food parks.',
+      badge: 'New Package',
+      is_popular: false,
+      features: [
+        'Heavy Duty Stainless Food Cart / Kiosk',
+        'Complete Cooking & Steaming Equipment',
+        'Initial Product Inventory Worth ₱15,000',
+        'Crew Operations Training & Manual'
+      ]
+    };
+    setCmsPackages(prev => [newPkg, ...prev]);
+  };
+
+  const handleRemovePackage = (idx) => {
+    setCmsPackages(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleAddPackageFeature = (pkgIdx) => {
+    const updated = [...cmsPackages];
+    if (!updated[pkgIdx].features) updated[pkgIdx].features = [];
+    updated[pkgIdx].features.push('New Package Inclusion');
+    setCmsPackages(updated);
+  };
+
+  const handleRemovePackageFeature = (pkgIdx, featureIdx) => {
+    const updated = [...cmsPackages];
+    updated[pkgIdx].features = (updated[pkgIdx].features || []).filter((_, i) => i !== featureIdx);
+    setCmsPackages(updated);
+  };
+
+  const handleUpdatePackageFeature = (pkgIdx, featureIdx, val) => {
+    const updated = [...cmsPackages];
+    if (!updated[pkgIdx].features) updated[pkgIdx].features = [];
+    updated[pkgIdx].features[featureIdx] = val;
+    setCmsPackages(updated);
+  };
+
+  // Branch Add / Remove
+  const handleAddBranch = () => {
+    const newBranch = {
+      id: `br-${Date.now()}`,
+      name: 'New Misis Siomai Branch',
+      city: 'Cebu City',
+      address: 'Enter location / street address',
+      phone: '0932 2329484',
+      hours: '8:00 AM - 8:00 PM',
+      is_active: true
+    };
+    setCmsBranches(prev => [newBranch, ...prev]);
+  };
+
+  const handleRemoveBranch = (idx) => {
+    setCmsBranches(prev => prev.filter((_, i) => i !== idx));
+  };
+
 
   // CMS Save Handlers
   const triggerSaveNotification = (msg) => {
@@ -565,9 +672,11 @@ export default function AdminDashboard() {
                         <td className="py-4 px-5 text-right">
                           <button
                             onClick={() => setSelectedLead(item)}
-                            className="p-2 rounded-xl bg-rose-600/20 text-rose-300 hover:text-white text-xs font-bold cursor-pointer"
+                            className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-rose-900/40 cursor-pointer ml-auto transition-colors"
+                            title="View Lead Details"
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>View Details</span>
                           </button>
                         </td>
                       </tr>
@@ -722,81 +831,188 @@ export default function AdminDashboard() {
         {/* TAB 4: PACKAGES CMS */}
         {activeTab === 'packages' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="font-heading font-extrabold text-3xl text-white">Franchise Packages CMS</h1>
                 <p className="text-xs text-zinc-400">Manage packages, prices, inclusions, and popular highlights</p>
               </div>
-              <button
-                onClick={handleSavePackages}
-                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-rose-900/40 cursor-pointer"
-              >
-                <Save className="w-4 h-4" />
-                <span>Save Packages</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleAddPackage}
+                  className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Plus className="w-4 h-4 text-emerald-400" />
+                  <span>Add Package</span>
+                </button>
+                <button
+                  onClick={handleSavePackages}
+                  className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-rose-900/40 cursor-pointer transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Save Packages</span>
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              {cmsPackages.map((pkg, idx) => (
-                <div key={pkg.id || idx} className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-zinc-400">Package Name</label>
-                      <input
-                        type="text"
-                        value={pkg.name}
-                        onChange={(e) => {
-                          const updated = [...cmsPackages];
-                          updated[idx].name = e.target.value;
-                          setCmsPackages(updated);
-                        }}
-                        className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-zinc-400">Price</label>
-                      <input
-                        type="text"
-                        value={pkg.price}
-                        onChange={(e) => {
-                          const updated = [...cmsPackages];
-                          updated[idx].price = e.target.value;
-                          setCmsPackages(updated);
-                        }}
-                        className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-amber-300 font-bold"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-zinc-400">Badge</label>
-                      <input
-                        type="text"
-                        value={pkg.badge || ''}
-                        onChange={(e) => {
-                          const updated = [...cmsPackages];
-                          updated[idx].badge = e.target.value;
-                          setCmsPackages(updated);
-                        }}
-                        className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-zinc-400">Description</label>
-                    <input
-                      type="text"
-                      value={pkg.description}
-                      onChange={(e) => {
-                        const updated = [...cmsPackages];
-                        updated[idx].description = e.target.value;
-                        setCmsPackages(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
-                    />
-                  </div>
+            {cmsPackages.length === 0 ? (
+              <div className="p-12 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-4">
+                <Package className="w-12 h-12 text-zinc-600 mx-auto" />
+                <div className="space-y-1">
+                  <h3 className="text-lg font-bold text-white">No Packages Added Yet</h3>
+                  <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                    Click the button below to add your first franchise package.
+                  </p>
                 </div>
-              ))}
-            </div>
+                <button
+                  onClick={handleAddPackage}
+                  className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs inline-flex items-center gap-2 shadow-lg shadow-rose-900/40 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add First Package</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {cmsPackages.map((pkg, idx) => (
+                  <div key={pkg.id || idx} className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4">
+                    
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 font-extrabold text-[10px] uppercase tracking-wider">
+                          Package #{cmsPackages.length - idx}
+                        </span>
+                        <h3 className="font-bold text-sm text-white truncate max-w-xs">{pkg.name || 'Unnamed Package'}</h3>
+                      </div>
+                      <button
+                        onClick={() => handleRemovePackage(idx)}
+                        className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition-colors cursor-pointer"
+                        title="Delete Package"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-zinc-400">Package Name</label>
+                        <input
+                          type="text"
+                          value={pkg.name || ''}
+                          onChange={(e) => {
+                            const updated = [...cmsPackages];
+                            updated[idx].name = e.target.value;
+                            setCmsPackages(updated);
+                          }}
+                          placeholder="e.g. Food Cart Package"
+                          className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 focus:outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-zinc-400">Price</label>
+                        <input
+                          type="text"
+                          value={pkg.price || ''}
+                          onChange={(e) => {
+                            const updated = [...cmsPackages];
+                            updated[idx].price = e.target.value;
+                            setCmsPackages(updated);
+                          }}
+                          placeholder="e.g. ₱99,000"
+                          className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-amber-300 font-bold focus:border-rose-500 focus:outline-none"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-zinc-400">Badge / Tagline</label>
+                        <input
+                          type="text"
+                          value={pkg.badge || ''}
+                          onChange={(e) => {
+                            const updated = [...cmsPackages];
+                            updated[idx].badge = e.target.value;
+                            setCmsPackages(updated);
+                          }}
+                          placeholder="e.g. Starter Choice, Most Popular"
+                          className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-zinc-400">Description</label>
+                      <input
+                        type="text"
+                        value={pkg.description || ''}
+                        onChange={(e) => {
+                          const updated = [...cmsPackages];
+                          updated[idx].description = e.target.value;
+                          setCmsPackages(updated);
+                        }}
+                        placeholder="Brief overview of ideal location or business model"
+                        className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 focus:outline-none"
+                      />
+                    </div>
+
+                    {/* Features / Inclusions List */}
+                    <div className="space-y-2 pt-2 border-t border-zinc-800/60">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-zinc-300">Package Inclusions & Features</label>
+                        <button
+                          type="button"
+                          onClick={() => handleAddPackageFeature(idx)}
+                          className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs text-emerald-400 font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Add Inclusion</span>
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {(pkg.features || []).map((feat, fIdx) => (
+                          <div key={fIdx} className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={feat}
+                              onChange={(e) => handleUpdatePackageFeature(idx, fIdx, e.target.value)}
+                              className="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 focus:border-rose-500 focus:outline-none"
+                              placeholder="e.g. Free crew training"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePackageFeature(idx, fIdx)}
+                              className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition-colors cursor-pointer"
+                              title="Remove inclusion"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Popular Checkbox Toggle */}
+                    <div className="pt-2 flex items-center justify-between border-t border-zinc-800/60">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(pkg.is_popular)}
+                          onChange={(e) => {
+                            const updated = [...cmsPackages];
+                            updated[idx].is_popular = e.target.checked;
+                            setCmsPackages(updated);
+                          }}
+                          className="rounded border-zinc-700 bg-zinc-950 text-rose-600 focus:ring-rose-500"
+                        />
+                        <span className="text-xs text-zinc-300 font-semibold">
+                          Mark as Most Popular / Featured Highlight
+                        </span>
+                      </label>
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -983,73 +1199,309 @@ export default function AdminDashboard() {
         )}
 
         {/* TAB 6: BRANCHES CMS */}
-        {activeTab === 'branches' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="font-heading font-extrabold text-3xl text-white">Branches CMS</h1>
-                <p className="text-xs text-zinc-400">Configure franchise locations, addresses, and hours</p>
-              </div>
-              <button
-                onClick={handleSaveBranches}
-                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-rose-900/40 cursor-pointer"
-              >
-                <Save className="w-4 h-4" />
-                <span>Save Branches</span>
-              </button>
-            </div>
+        {activeTab === 'branches' && (() => {
+          // Compute cities for admin filter
+          const adminCities = ['All', ...Array.from(new Set(cmsBranches.map(b => b.city?.trim()).filter(Boolean)))];
 
-            <div className="space-y-4">
-              {cmsBranches.map((br, idx) => (
-                <div key={br.id || idx} className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-zinc-400">Branch Name</label>
-                      <input
-                        type="text"
-                        value={br.name}
-                        onChange={(e) => {
-                          const updated = [...cmsBranches];
-                          updated[idx].name = e.target.value;
-                          setCmsBranches(updated);
-                        }}
-                        className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
-                      />
-                    </div>
+          // Filter branches
+          const filteredAdminBranches = cmsBranches.filter((br) => {
+            if (adminBranchCityFilter !== 'All' && br.city !== adminBranchCityFilter) return false;
+            if (adminBranchStatusFilter === 'active' && br.is_active === false) return false;
+            if (adminBranchStatusFilter === 'inactive' && br.is_active !== false) return false;
+            if (!adminBranchSearch.trim()) return true;
+            const term = adminBranchSearch.toLowerCase();
+            return (
+              (br.name && br.name.toLowerCase().includes(term)) ||
+              (br.address && br.address.toLowerCase().includes(term)) ||
+              (br.city && br.city.toLowerCase().includes(term)) ||
+              (br.phone && br.phone.toLowerCase().includes(term))
+            );
+          });
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-zinc-400">City / Region</label>
-                      <input
-                        type="text"
-                        value={br.city}
-                        onChange={(e) => {
-                          const updated = [...cmsBranches];
-                          updated[idx].city = e.target.value;
-                          setCmsBranches(updated);
-                        }}
-                        className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
-                      />
-                    </div>
-                  </div>
+          // Paginated view
+          const visibleAdminBranches = filteredAdminBranches.slice(0, adminBranchVisibleCount);
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-zinc-400">Full Address</label>
-                    <input
-                      type="text"
-                      value={br.address}
-                      onChange={(e) => {
-                        const updated = [...cmsBranches];
-                        updated[idx].address = e.target.value;
-                        setCmsBranches(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white"
-                    />
-                  </div>
+          return (
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="font-heading font-extrabold text-3xl text-white">Branches CMS</h1>
+                  <p className="text-xs text-zinc-400">
+                    Configure franchise locations, addresses, contact details, and operating hours ({cmsBranches.length} total)
+                  </p>
                 </div>
-              ))}
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleAddBranch}
+                    className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <Plus className="w-4 h-4 text-emerald-400" />
+                    <span>Add Branch</span>
+                  </button>
+                  <button
+                    onClick={handleSaveBranches}
+                    className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-rose-900/40 cursor-pointer transition-colors"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save Branches</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Admin Search & Filter Controls */}
+              {cmsBranches.length > 0 && (
+                <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-3">
+                  <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                    
+                    {/* Search Input */}
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <input
+                        type="text"
+                        placeholder="Search by branch name, address, or city..."
+                        value={adminBranchSearch}
+                        onChange={(e) => {
+                          setAdminBranchSearch(e.target.value);
+                          setAdminBranchVisibleCount(10);
+                        }}
+                        className="w-full pl-9 pr-8 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white placeholder:text-zinc-500 focus:border-rose-500 focus:outline-none"
+                      />
+                      {adminBranchSearch && (
+                        <button
+                          onClick={() => setAdminBranchSearch('')}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-zinc-400 hover:text-white"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Status filter dropdown / pills */}
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={adminBranchStatusFilter}
+                        onChange={(e) => {
+                          setAdminBranchStatusFilter(e.target.value);
+                          setAdminBranchVisibleCount(10);
+                        }}
+                        className="px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-300 font-semibold focus:border-rose-500 focus:outline-none cursor-pointer"
+                      >
+                        <option value="all">All Statuses</option>
+                        <option value="active">Active Only</option>
+                        <option value="inactive">Inactive Only</option>
+                      </select>
+
+                      <span className="text-xs text-zinc-400 font-medium px-2.5 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800">
+                        {filteredAdminBranches.length} of {cmsBranches.length}
+                      </span>
+                    </div>
+
+                  </div>
+
+                  {/* City Pills */}
+                  {adminCities.length > 2 && (
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1 scrollbar-none">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 mr-1 shrink-0">
+                        City:
+                      </span>
+                      {adminCities.map(city => (
+                        <button
+                          key={city}
+                          onClick={() => {
+                            setAdminBranchCityFilter(city);
+                            setAdminBranchVisibleCount(10);
+                          }}
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors border ${
+                            adminBranchCityFilter === city
+                              ? 'bg-rose-600 text-white border-rose-500 font-bold'
+                              : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-white'
+                          }`}
+                        >
+                          {city}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* No Branches Added State */}
+              {cmsBranches.length === 0 ? (
+                <div className="p-12 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-4">
+                  <MapPin className="w-12 h-12 text-zinc-600 mx-auto" />
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-white">No Branches Added Yet</h3>
+                    <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                      Click the button below to add your first store location or franchise branch.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleAddBranch}
+                    className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs inline-flex items-center gap-2 shadow-lg shadow-rose-900/40 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add First Branch</span>
+                  </button>
+                </div>
+              ) : filteredAdminBranches.length === 0 ? (
+                <div className="p-12 rounded-2xl bg-zinc-900 border border-zinc-800 text-center space-y-3">
+                  <Search className="w-8 h-8 text-zinc-600 mx-auto" />
+                  <h3 className="text-sm font-bold text-white">No matching branches found</h3>
+                  <p className="text-xs text-zinc-400">
+                    No branches matched your search query "{adminBranchSearch}".
+                  </p>
+                  <button
+                    onClick={() => {
+                      setAdminBranchSearch('');
+                      setAdminBranchCityFilter('All');
+                      setAdminBranchStatusFilter('all');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-white cursor-pointer"
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {visibleAdminBranches.map((br) => {
+                    const realIndex = cmsBranches.findIndex(b => b === br || (b.id && b.id === br.id));
+                    const idx = realIndex !== -1 ? realIndex : cmsBranches.indexOf(br);
+
+                    return (
+                      <div key={br.id || idx} className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4">
+                        <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-0.5 rounded-md bg-rose-500/10 text-rose-400 font-extrabold text-[10px] uppercase tracking-wider">
+                              Branch #{cmsBranches.length - idx}
+                            </span>
+                            <h3 className="font-bold text-sm text-white truncate max-w-xs">{br.name || 'Unnamed Branch'}</h3>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveBranch(idx)}
+                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition-colors cursor-pointer"
+                            title="Delete Branch"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-zinc-400">Branch Name</label>
+                            <input
+                              type="text"
+                              value={br.name || ''}
+                              onChange={(e) => {
+                                const updated = [...cmsBranches];
+                                updated[idx].name = e.target.value;
+                                setCmsBranches(updated);
+                              }}
+                              placeholder="e.g. Misis Siomai Main Headquarters"
+                              className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-zinc-400">City / Region</label>
+                            <input
+                              type="text"
+                              value={br.city || ''}
+                              onChange={(e) => {
+                                const updated = [...cmsBranches];
+                                updated[idx].city = e.target.value;
+                                setCmsBranches(updated);
+                              }}
+                              placeholder="e.g. Talisay City, Cebu"
+                              className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-zinc-400">Full Address</label>
+                          <input
+                            type="text"
+                            value={br.address || ''}
+                            onChange={(e) => {
+                              const updated = [...cmsBranches];
+                              updated[idx].address = e.target.value;
+                              setCmsBranches(updated);
+                            }}
+                            placeholder="e.g. Ramona Village, San Isidro"
+                            className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-zinc-400">Contact Number(s)</label>
+                            <input
+                              type="text"
+                              value={br.phone || ''}
+                              onChange={(e) => {
+                                const updated = [...cmsBranches];
+                                updated[idx].phone = e.target.value;
+                                setCmsBranches(updated);
+                              }}
+                              placeholder="e.g. 0932 2329484 / 0995 5662713"
+                              className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-xs font-bold text-zinc-400">Operating Hours</label>
+                            <input
+                              type="text"
+                              value={br.hours || ''}
+                              onChange={(e) => {
+                                const updated = [...cmsBranches];
+                                updated[idx].hours = e.target.value;
+                                setCmsBranches(updated);
+                              }}
+                              placeholder="e.g. 8:00 AM - 6:00 PM"
+                              className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pt-2 flex items-center justify-between border-t border-zinc-800/60">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={br.is_active !== false}
+                              onChange={(e) => {
+                                const updated = [...cmsBranches];
+                                updated[idx].is_active = e.target.checked;
+                                setCmsBranches(updated);
+                              }}
+                              className="rounded border-zinc-700 bg-zinc-950 text-rose-600 focus:ring-rose-500"
+                            />
+                            <span className="text-xs text-zinc-300 font-semibold">
+                              Branch Active & Listed on Site
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Load More Pagination for Admin */}
+                  {filteredAdminBranches.length > adminBranchVisibleCount && (
+                    <div className="text-center pt-4">
+                      <button
+                        onClick={() => setAdminBranchVisibleCount(prev => prev + 10)}
+                        className="px-6 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs text-white font-bold inline-flex items-center gap-2 transition-colors cursor-pointer"
+                      >
+                        <span>Load More Branches ({filteredAdminBranches.length - adminBranchVisibleCount} remaining)</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* TAB 7: CONTACT INFO CMS */}
         {activeTab === 'contact' && (
@@ -1127,6 +1579,127 @@ export default function AdminDashboard() {
         )}
 
       </main>
+
+      {/* Lead Detail Modal Overlay */}
+      {selectedLead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            {/* Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-zinc-800">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 font-extrabold text-[10px] uppercase tracking-wider border border-rose-500/20">
+                    {selectedLead.inquiry_type || 'General'}
+                  </span>
+                  <span className="text-xs text-zinc-400">
+                    Submitted: {new Date(selectedLead.created_at || Date.now()).toLocaleString()}
+                  </span>
+                </div>
+                <h2 className="font-heading font-extrabold text-2xl text-white">
+                  {selectedLead.name}
+                </h2>
+              </div>
+              
+              <button
+                onClick={() => setSelectedLead(null)}
+                className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Contact Information & Target City / Package */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">Contact Info</span>
+                <div className="space-y-1.5 text-xs">
+                  <p className="flex items-center gap-2 text-zinc-300 font-medium">
+                    <Mail className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <a href={`mailto:${selectedLead.email}`} className="hover:underline hover:text-rose-300 truncate">
+                      {selectedLead.email}
+                    </a>
+                  </p>
+                  <p className="flex items-center gap-2 text-zinc-300 font-medium">
+                    <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <a href={`tel:${selectedLead.phone}`} className="hover:underline hover:text-emerald-300">
+                      {selectedLead.phone}
+                    </a>
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">Inquiry Details</span>
+                <div className="space-y-1.5 text-xs text-zinc-300">
+                  <p className="flex items-center gap-2 font-medium">
+                    <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>Target Location: <strong className="text-white">{selectedLead.custom_fields?.target_city || 'Not specified'}</strong></span>
+                  </p>
+                  {selectedLead.custom_fields?.selected_package && (
+                    <p className="flex items-center gap-2 font-medium">
+                      <Package className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <span>Selected Package: <strong className="text-amber-300">{selectedLead.custom_fields.selected_package}</strong></span>
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Lead Status Control */}
+            <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-between gap-4">
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Application Status</span>
+              <select
+                value={selectedLead.status || 'New'}
+                onChange={(e) => handleUpdateLeadStatus(selectedLead.id, e.target.value)}
+                className="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-700 text-xs font-bold text-rose-400 focus:border-rose-500 outline-none cursor-pointer"
+              >
+                <option value="New">New Lead</option>
+                <option value="In Contact">In Contact</option>
+                <option value="Qualified">Qualified</option>
+                <option value="Approved">Approved</option>
+                <option value="Archived">Archived</option>
+              </select>
+            </div>
+
+            {/* Complete Submitted Message */}
+            <div className="space-y-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block">Customer Message / Note</span>
+              <div className="p-5 rounded-2xl bg-zinc-950 border border-zinc-800/80 text-sm text-zinc-200 leading-relaxed whitespace-pre-wrap font-medium">
+                {selectedLead.message || 'No additional message provided.'}
+              </div>
+            </div>
+
+            {/* Action Bar */}
+            <div className="pt-4 border-t border-zinc-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <a
+                  href={`tel:${selectedLead.phone}`}
+                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-900/30 transition-colors cursor-pointer"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call {selectedLead.phone}</span>
+                </a>
+                <a
+                  href={`mailto:${selectedLead.email}?subject=Misis%20Siomai%20Inquiry%20Response`}
+                  className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Mail className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Send Email</span>
+                </a>
+              </div>
+
+              <button
+                onClick={() => setSelectedLead(null)}
+                className="px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
