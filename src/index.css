@@ -59,3 +59,12 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 .animate-glow {
   animation: pulseGlow 3s ease-in-out infinite;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}

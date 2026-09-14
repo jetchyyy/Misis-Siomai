@@ -1,144 +1,120 @@
 import React from 'react';
-import { Flame, CheckCircle2, ArrowRight, TrendingUp, Store, Sparkles } from 'lucide-react';
 import { useCMS } from '../context/CMSContext';
+import siomaiBg from '../assets/siomai.webp';
 
 export default function Hero({ onOpenFranchiseModal }) {
   const { cms } = useCMS();
   const { home, about } = cms;
 
   return (
-    <section id="hero" className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-b from-amber-50/50 via-[#FFFDF7] to-[#FFFDF7]">
-      
-      {/* Background Decorative Circles */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-rose-400/10 via-amber-400/10 to-transparent rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-20 right-[-10%] w-96 h-96 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+    <section id="hero" className="relative pt-20 pb-0 bg-[#2d1b11]">
+      <div className="relative w-full max-w-[1600px] mx-auto min-h-[600px] md:min-h-[85vh] flex items-center justify-start p-6 md:p-16 overflow-hidden">
+        
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={siomaiBg}
+            alt="Delicious Siomai Background" 
+            className="w-full h-full object-cover"
+          />
+          {/* Dark gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/90 via-zinc-900/60 to-transparent"></div>
+        </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        {/* Decorative Corner Borders */}
+        <div className="absolute inset-4 md:inset-8 lg:inset-10 border-2 border-[#d4af37]/60 z-10 pointer-events-none hidden sm:block">
+          {/* Top Left Corner */}
+          <div className="absolute -top-3 -left-3 w-6 h-6 border-2 border-[#d4af37]/80 bg-transparent"></div>
+          <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-[#d4af37]/80"></div>
+          <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-[#d4af37]/60"></div>
           
-          {/* Left Hero Content */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            
-            {/* Top Proof Tag */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-100/80 border border-rose-300/60 text-rose-800 text-xs font-bold shadow-xs">
-              <Sparkles className="w-4 h-4 text-rose-600 animate-pulse" />
-              <span>{home.badge || '100% Real Pork & Beef • No Extenders • Fast ROI'}</span>
-            </div>
+          {/* Top Right Corner */}
+          <div className="absolute -top-3 -right-3 w-6 h-6 border-2 border-[#d4af37]/80 bg-transparent"></div>
+          <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-[#d4af37]/80"></div>
+          <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-[#d4af37]/60"></div>
+          
+          {/* Bottom Left Corner */}
+          <div className="absolute -bottom-3 -left-3 w-6 h-6 border-2 border-[#d4af37]/80 bg-transparent"></div>
+          <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-[#d4af37]/80"></div>
+          <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-[#d4af37]/60"></div>
+          
+          {/* Bottom Right Corner */}
+          <div className="absolute -bottom-3 -right-3 w-6 h-6 border-2 border-[#d4af37]/80 bg-transparent"></div>
+          <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-[#d4af37]/80"></div>
+          <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-[#d4af37]/60"></div>
+        </div>
 
-            {/* Main Headline */}
-            <h1 className="font-heading font-black text-4xl sm:text-5xl lg:text-6xl text-zinc-900 tracking-tight leading-[1.15]">
-              {about.brand_name || 'Misis Siomai Cebu'} <br className="hidden sm:block" />
-              <span className="bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 bg-clip-text text-transparent">
-                {about.tagline || 'Ang Paboritong Siomai ng Bayan'}
-              </span>
-            </h1>
+        {/* Hero Content */}
+        <div className="relative z-20 w-full max-w-3xl space-y-6 sm:space-y-8 mt-12 md:mt-0">
+          
+          <h1 
+            className="font-serif font-black text-6xl sm:text-7xl md:text-8xl italic tracking-tight leading-[1.1]"
+            style={{ 
+              color: '#cf030f', 
+              textShadow: `
+                -2px -2px 0 #fff,  
+                 2px -2px 0 #fff,
+                -2px  2px 0 #fff,
+                 2px  2px 0 #fff,
+                 0px -2px 0 #fff,
+                 0px  2px 0 #fff,
+                -2px  0px 0 #fff,
+                 2px  0px 0 #fff,
+                 3px 5px 12px rgba(0,0,0,0.6)
+              `
+            }}
+          >
+            {about.brand_name || 'Misis Siomai Cebu'}
+          </h1>
+          
+          <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-snug drop-shadow-lg">
+            {about.tagline || 'Ang Paboritong Siomai ng Bayan'}
+          </h2>
 
-            {/* Subtext */}
-            <p className="text-base sm:text-lg text-zinc-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-              {home.hero_subtitle || 'Indulge in juicy, authentic steamed & crispy fried dimsum crafted daily with 100% pure pork & beef. Own a high-margin food cart franchise with zero royalty fees!'}
-            </p>
+          <p className="text-zinc-200 text-lg sm:text-xl font-medium max-w-2xl drop-shadow-md leading-relaxed">
+            {home.hero_subtitle || 'Premium Cebuano Siomai, Inspired by Heritage. Authentic 100% pork and beef dimsum.'}
+          </p>
 
-            {/* Bullet Proof Points */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 max-w-xl mx-auto lg:mx-0 text-left">
-              {(about.values || [
-                '100% Pure Meat Quality',
-                'Zero Royalty Fees',
-                'Community Empowerment',
-                'Fast Return on Investment'
-              ]).map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-zinc-800">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Hero Dual Buttons */}
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <button
-                onClick={onOpenFranchiseModal}
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-heading font-extrabold text-base shadow-xl shadow-rose-600/30 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
-              >
-                <span>{home.cta_button || 'Inquire Franchise Now'}</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
-
-          </div>
-
-          {/* Right Hero Visual Showcase */}
-          <div className="lg:col-span-5 relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none">
-              
-              {/* Main Image Banner */}
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-rose-950/15 border-4 border-white glass-card animate-float">
-                <img
-                  src="https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=800&q=80"
-                  alt="Misis Siomai Platter"
-                  className="w-full h-[400px] sm:h-[460px] object-cover hover:scale-105 transition-transform duration-700"
-                />
-                
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
-                
-                {/* Floating Image Text */}
-                <div className="absolute bottom-6 left-6 right-6 text-white">
-                  <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
-                    <Flame className="w-4 h-4 fill-amber-400" />
-                    Signature Bestseller
-                  </div>
-                  <h3 className="font-heading font-extrabold text-2xl">Steamed Pork & Beef Siomai</h3>
-                  <p className="text-xs text-zinc-300 mt-1">Served piping hot with toasted chili garlic oil & calamansi</p>
-                </div>
-              </div>
-
-              {/* Floating Badge 1: Low Capital */}
-              <div className="absolute -top-6 -left-6 glass-card p-4 rounded-2xl shadow-lg border border-amber-300/40 hidden sm:flex items-center gap-3 bg-white/95">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-                  <Store className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Franchise Starts At</div>
-                  <div className="font-heading font-extrabold text-lg text-zinc-900">₱99,000 All-In</div>
-                </div>
-              </div>
-
-              {/* Floating Badge 2: Fast ROI */}
-              <div className="absolute -bottom-6 -right-6 glass-card p-4 rounded-2xl shadow-lg border border-rose-300/40 hidden sm:flex items-center gap-3 bg-white/95">
-                <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold">
-                  <TrendingUp className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Fast ROI Target</div>
-                  <div className="font-heading font-extrabold text-lg text-emerald-600">{home.stat_roi_months || '3 to 6'} Months</div>
-                </div>
-              </div>
-
-            </div>
+          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <button 
+              onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-10 py-4 rounded-full bg-[#cf030f] hover:bg-[#a0020b] text-white font-bold text-lg transition-all shadow-xl hover:shadow-[#cf030f]/30 hover:-translate-y-1"
+            >
+              Explore Our Menu
+            </button>
+            <button 
+              onClick={onOpenFranchiseModal}
+              className="px-10 py-4 rounded-full bg-[#18572c] hover:bg-[#113d1e] text-white font-bold text-lg border-2 border-white transition-all shadow-xl hover:-translate-y-1"
+            >
+              {home.cta_button || 'Inquire about Franchising'}
+            </button>
           </div>
 
         </div>
-
-        {/* Stats Counter Bar */}
-        <div className="mt-16 pt-10 border-t border-zinc-200/80 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div className="space-y-1">
-            <div className="font-heading font-extrabold text-3xl sm:text-4xl text-rose-600">{home.stat_branches || '50+'}</div>
-            <div className="text-xs sm:text-sm font-semibold text-zinc-600">Active Stores Nationwide</div>
-          </div>
-          <div className="space-y-1">
-            <div className="font-heading font-extrabold text-3xl sm:text-4xl text-zinc-900">10,000+</div>
-            <div className="text-xs sm:text-sm font-semibold text-zinc-600">Daily Pieces Served</div>
-          </div>
-          <div className="space-y-1">
-            <div className="font-heading font-extrabold text-3xl sm:text-4xl text-rose-600">₱0</div>
-            <div className="text-xs sm:text-sm font-semibold text-zinc-600">Royalty & Renewal Fees</div>
-          </div>
-          <div className="space-y-1">
-            <div className="font-heading font-extrabold text-3xl sm:text-4xl text-amber-500">{home.stat_satisfaction || '99%'}</div>
-            <div className="text-xs sm:text-sm font-semibold text-zinc-600">Pure Meat Guarantee</div>
+      </div>
+      
+      {/* Stats Counter Bar - Darkened to match aesthetic */}
+      <div className="bg-[#111111] border-t border-zinc-800 py-10 relative z-20 shadow-2xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div className="space-y-2">
+              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#cf030f]">{home.stat_branches || '50+'}</div>
+              <div className="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">Active Stores</div>
+            </div>
+            <div className="space-y-2">
+              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-white">10k+</div>
+              <div className="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">Daily Pieces Served</div>
+            </div>
+            <div className="space-y-2">
+              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#cf030f]">₱0</div>
+              <div className="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">Royalty Fees</div>
+            </div>
+            <div className="space-y-2">
+              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#d4af37]">{home.stat_satisfaction || '99%'}</div>
+              <div className="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">Meat Guarantee</div>
+            </div>
           </div>
         </div>
-
       </div>
     </section>
   );

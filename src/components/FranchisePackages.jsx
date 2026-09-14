@@ -7,121 +7,155 @@ export default function FranchisePackages({ onSelectPackage }) {
   const packages = cms.packages || [];
 
   return (
-    <section id="franchise" className="py-20 md:py-28 bg-gradient-to-b from-amber-50/30 via-[#FFFDF7] to-amber-50/20 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="franchise" className="py-20 md:py-32 bg-[#FAF3E3] relative overflow-hidden">
+      
+      {/* Decorative Gold Rings (Moon Gate styling) */}
+      <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full border-[2px] border-[#D4AF37]/20 pointer-events-none"></div>
+      <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] rounded-full border-[8px] border-[#D4AF37]/10 pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-bold uppercase tracking-wider">
-            <Zap className="w-4 h-4 text-rose-600" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#cf030f]/10 text-[#cf030f] border border-[#cf030f]/20 text-xs font-black uppercase tracking-widest shadow-sm">
+            <Zap className="w-4 h-4" />
             Turnkey Business Opportunity
           </div>
-          <h2 className="font-heading font-extrabold text-3xl sm:text-4xl lg:text-5xl text-zinc-900 tracking-tight">
-            Choose Your <span className="text-rose-600">Franchise Package</span>
+          <h2 className="font-serif font-black text-4xl sm:text-5xl lg:text-6xl text-[#18572c] tracking-tight leading-tight">
+            Choose Your <br className="hidden sm:block" /><span 
+              className="text-[#cf030f] italic"
+              style={{ 
+                textShadow: `
+                  -1px -1px 0 #fff,  
+                   1px -1px 0 #fff,
+                  -1px  1px 0 #fff,
+                   1px  1px 0 #fff,
+                   2px  4px 8px rgba(0,0,0,0.15)
+                `
+              }}
+            >Franchise Package</span>
           </h2>
-          <p className="text-base text-zinc-600">
+          <p className="text-base text-zinc-700 mt-4 leading-relaxed">
             Start your own food business with our proven, low-capital turnkey franchise packages. Zero royalty fees, no monthly quotas!
           </p>
         </div>
 
-        {/* Feature Highlights Banner */}
-        <div className="mt-10 p-4 sm:p-6 rounded-3xl bg-white border border-rose-900/10 shadow-md grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
-          <div className="flex items-center gap-4 justify-center md:justify-start">
-            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+        {/* Feature Highlights Banner (Scroll Style) */}
+        <div className="mt-14 p-6 sm:p-8 bg-[#FAF3E3] border-y-4 border-x border-[#D4AF37] shadow-sm rounded-xl grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left relative overflow-hidden">
+          {/* Subtle pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:20px_20px] opacity-10"></div>
+
+          <div className="flex items-center gap-4 justify-center md:justify-start relative z-10">
+            <div className="w-14 h-14 rounded-full border-2 border-[#D4AF37] bg-white text-[#cf030f] flex items-center justify-center shrink-0 shadow-sm">
               <DollarSign className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-heading font-extrabold text-base text-zinc-900">₱0 Royalty Fees</h4>
-              <p className="text-xs text-zinc-600">Keep 100% of your store net profits every month.</p>
+              <h4 className="font-serif font-black text-lg text-[#18572c]">₱0 Royalty Fees</h4>
+              <p className="text-sm text-zinc-600 mt-1">Keep 100% of your store net profits every month.</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 justify-center md:justify-start">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-4 justify-center md:justify-start relative z-10">
+            <div className="w-14 h-14 rounded-full border-2 border-[#D4AF37] bg-white text-[#cf030f] flex items-center justify-center shrink-0 shadow-sm">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-heading font-extrabold text-base text-zinc-900">Turnkey Setup</h4>
-              <p className="text-xs text-zinc-600">Includes cart, equipment, initial stocks & training.</p>
+              <h4 className="font-serif font-black text-lg text-[#18572c]">Turnkey Setup</h4>
+              <p className="text-sm text-zinc-600 mt-1">Includes cart, equipment, initial stocks & training.</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 justify-center md:justify-start">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-4 justify-center md:justify-start relative z-10">
+            <div className="w-14 h-14 rounded-full border-2 border-[#D4AF37] bg-white text-[#cf030f] flex items-center justify-center shrink-0 shadow-sm">
               <Award className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-heading font-extrabold text-base text-zinc-900">High Profit Margins</h4>
-              <p className="text-xs text-zinc-600">Average 45% - 60% gross profit margin per order.</p>
+              <h4 className="font-serif font-black text-lg text-[#18572c]">High Profit Margins</h4>
+              <p className="text-sm text-zinc-600 mt-1">Average 45% - 60% gross profit margin per order.</p>
             </div>
           </div>
         </div>
 
         {/* Packages Grid */}
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
           {packages.map((pkg, idx) => {
             const isPopular = pkg.is_popular;
             return (
               <div
                 key={pkg.id || idx}
-                className={`glass-card rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 relative bg-white ${
-                  isPopular ? 'border-rose-500 shadow-xl ring-2 ring-rose-500/20' : 'border-zinc-200 hover:border-rose-400'
+                className={`rounded-[2rem] p-8 flex flex-col justify-between transition-all duration-500 relative border ${
+                  isPopular 
+                    ? 'bg-gradient-to-b from-[#cf030f] to-[#8a020a] border-[#D4AF37] shadow-[0_20px_40px_-15px_rgba(207,3,15,0.4)] hover:-translate-y-2' 
+                    : 'bg-white border-[#D4AF37]/30 shadow-xl hover:shadow-2xl hover:border-[#D4AF37] hover:-translate-y-2'
                 }`}
               >
-                {/* Popular Tag */}
+                {/* Popular Tag (Gold Seal) */}
                 {isPopular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-rose-600 to-amber-500 text-white font-heading font-extrabold text-xs tracking-wider shadow-md uppercase">
-                    MOST POPULAR PACKAGE
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 px-6 py-2 rounded-b-xl rounded-t-sm bg-gradient-to-b from-[#e6cd81] to-[#D4AF37] text-[#8a020a] font-black text-xs tracking-widest shadow-lg uppercase border border-[#b38e24] z-20">
+                    Most Popular
+                    <div className="absolute -bottom-2 left-0 w-full h-3 bg-[#D4AF37]" style={{ clipPath: 'polygon(0 0, 50% 100%, 100% 0)' }}></div>
                   </div>
                 )}
 
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center border ${
+                      isPopular ? 'bg-[#cf030f] border-[#D4AF37] text-[#D4AF37]' : 'bg-[#FAF3E3] border-[#D4AF37]/30 text-[#cf030f]'
+                    }`}>
                       <Store className="w-6 h-6" />
                     </div>
                     {pkg.badge && (
-                      <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800">
+                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                        isPopular ? 'bg-[#8a020a] text-[#D4AF37] border-[#D4AF37]/30' : 'bg-[#cf030f]/10 text-[#cf030f] border-[#cf030f]/20'
+                      }`}>
                         {pkg.badge}
                       </span>
                     )}
                   </div>
 
-                  <h3 className="font-heading font-extrabold text-2xl text-zinc-900 mt-4">
+                  <h3 className={`font-serif font-black text-3xl mt-4 ${isPopular ? 'text-white' : 'text-[#18572c]'}`}>
                     {pkg.name}
                   </h3>
-                  <p className="text-xs text-zinc-500 mt-1 min-h-[36px]">
+                  <p className={`text-sm mt-3 min-h-[48px] leading-relaxed ${isPopular ? 'text-zinc-200' : 'text-zinc-600'}`}>
                     {pkg.description}
                   </p>
 
                   {/* Price */}
-                  <div className="mt-6 p-4 rounded-2xl bg-rose-50/60 border border-rose-100">
-                    <span className="text-xs font-semibold text-zinc-500 block uppercase tracking-wider">All-In Investment</span>
-                    <div className="font-heading font-black text-3xl sm:text-4xl text-rose-600 mt-1">
+                  <div className={`mt-8 p-5 rounded-2xl border ${
+                    isPopular ? 'bg-[#8a020a]/50 border-[#D4AF37]/30' : 'bg-[#FAF3E3] border-[#D4AF37]/30'
+                  }`}>
+                    <span className={`text-[10px] font-black uppercase tracking-widest block mb-1 ${isPopular ? 'text-[#D4AF37]' : 'text-zinc-500'}`}>
+                      All-In Investment
+                    </span>
+                    <div className={`font-serif font-black text-4xl sm:text-4xl ${isPopular ? 'text-white' : 'text-[#cf030f]'}`}>
                       {pkg.price}
                     </div>
                   </div>
 
                   {/* Inclusions */}
-                  <div className="mt-6 space-y-3">
-                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-zinc-400">Package Inclusions:</h4>
+                  <div className="mt-8 space-y-4">
+                    <h4 className={`text-[10px] font-black uppercase tracking-widest ${isPopular ? 'text-[#D4AF37]' : 'text-[#18572c]'}`}>
+                      Package Inclusions:
+                    </h4>
                     {(pkg.features || []).map((item, fIdx) => (
-                      <div key={fIdx} className="flex items-start gap-2 text-xs text-zinc-700 font-medium">
-                        <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                        <span>{item}</span>
+                      <div key={fIdx} className="flex items-start gap-3">
+                        <Check className={`w-4 h-4 shrink-0 mt-0.5 ${isPopular ? 'text-[#D4AF37]' : 'text-[#cf030f]'}`} />
+                        <span className={`text-sm font-medium leading-relaxed ${isPopular ? 'text-zinc-100' : 'text-zinc-700'}`}>
+                          {item}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Apply CTA */}
-                <div className="mt-8 pt-6 border-t border-zinc-100">
+                <div className={`mt-10 pt-6 border-t ${isPopular ? 'border-[#D4AF37]/20' : 'border-zinc-200'}`}>
                   <button
                     onClick={() => onSelectPackage(pkg.name)}
-                    className={`w-full py-3.5 rounded-2xl font-heading font-extrabold text-sm transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+                    className={`w-full py-4 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md ${
                       isPopular
-                        ? 'bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white shadow-lg shadow-rose-600/30 hover:-translate-y-0.5'
-                        : 'bg-zinc-900 hover:bg-rose-600 text-white shadow-md hover:-translate-y-0.5'
+                        ? 'bg-gradient-to-r from-[#e6cd81] to-[#D4AF37] hover:from-[#D4AF37] hover:to-[#b38e24] text-[#8a020a] hover:shadow-lg hover:shadow-[#D4AF37]/40'
+                        : 'bg-[#cf030f] hover:bg-[#a6020c] text-white hover:shadow-lg hover:shadow-[#cf030f]/30'
                     }`}
                   >
                     <span>Apply for {pkg.name}</span>

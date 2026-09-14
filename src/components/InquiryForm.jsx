@@ -23,6 +23,15 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
   const [success, setSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Chinese Fretwork Corner SVG
+  const FretworkCorner = ({ className }) => (
+    <svg className={className} width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 49 V 15 H 15 V 1 H 49" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.8"/>
+      <path d="M9 41 V 23 H 23 V 9 H 41" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.8"/>
+      <rect x="1" y="1" width="14" height="14" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.8"/>
+    </svg>
+  );
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -71,27 +80,61 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
   };
 
   return (
-    <section id="contact" className="py-20 md:py-28 bg-gradient-to-b from-amber-50/20 via-[#FFFDF7] to-rose-50/30 relative">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="glass-card rounded-3xl p-8 sm:p-12 shadow-2xl bg-white border border-rose-900/10 relative overflow-hidden">
-          
-          {/* Top Decorative accent */}
-          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-rose-600 via-amber-500 to-rose-600" />
+    <section id="contact" className="py-20 md:py-32 bg-[#18572c] relative overflow-hidden border-t border-[#D4AF37]/20">
+      
+      {/* Background Image Container - User can replace the URL here! */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 mix-blend-overlay pointer-events-none"
+        style={{ backgroundImage: 'url("PUT_YOUR_BACKGROUND_IMAGE_URL_HERE")' }}
+      ></div>
+      {/* Dark overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#18572c] via-transparent to-[#18572c] opacity-80 pointer-events-none"></div>
 
-          {/* Form Title */}
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-bold uppercase tracking-wider">
-              <PhoneCall className="w-4 h-4 text-rose-600" />
-              Get In Touch With Us
-            </div>
-            <h2 className="font-heading font-extrabold text-3xl sm:text-4xl text-zinc-900">
-              Start Your <span className="text-rose-600">Franchise Journey</span> Today
-            </h2>
-            <p className="text-sm text-zinc-600 max-w-xl mx-auto">
-              Fill out the inquiry form below and our dedicated franchise manager will reach out within 24 hours with complete package details and ROI analysis!
-            </p>
+      {/* 4 Decorative Corners Pinned to Section Edges */}
+      <div className="absolute top-2 left-2 md:top-5 md:left-5 hidden sm:block"><FretworkCorner className="w-12 h-12 md:w-16 md:h-16 text-[#D4AF37]" /></div>
+      <div className="absolute top-2 right-2 md:top-5 md:right-5 hidden sm:block"><FretworkCorner className="w-12 h-12 md:w-16 md:h-16 rotate-90 text-[#D4AF37]" /></div>
+      <div className="absolute bottom-2 right-2 md:bottom-5 md:right-5 hidden sm:block"><FretworkCorner className="w-12 h-12 md:w-16 md:h-16 rotate-180 text-[#D4AF37]" /></div>
+      <div className="absolute bottom-2 left-2 md:bottom-5 md:left-5 hidden sm:block"><FretworkCorner className="w-12 h-12 md:w-16 md:h-16 -rotate-90 text-[#D4AF37]" /></div>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* Form Title */}
+        <div className="text-center space-y-4 mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 text-xs font-black uppercase tracking-widest shadow-sm">
+            <PhoneCall className="w-4 h-4" />
+            Get In Touch With Us
           </div>
+          <h2 className="font-serif font-black text-4xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight">
+            Start Your <br className="hidden sm:block" /><span 
+              className="text-[#cf030f] italic pr-2 sm:pr-3 inline-block"
+              style={{ 
+                textShadow: `
+                  -1px -1px 0 #fff,  
+                   1px -1px 0 #fff,
+                  -1px  1px 0 #fff,
+                   1px  1px 0 #fff,
+                   2px  4px 8px rgba(0,0,0,0.15)
+                `
+              }}
+            >Franchise Journey</span> Today
+          </h2>
+          <p className="text-sm sm:text-base text-zinc-100 max-w-xl mx-auto leading-relaxed mt-4">
+            Fill out the inquiry form below and our dedicated franchise manager will reach out within 24 hours with complete package details and ROI analysis!
+          </p>
+        </div>
+
+        <div className="rounded-[2rem] p-8 sm:p-12 shadow-2xl bg-[#FAF3E3] border-[4px] border-[#D4AF37] relative group overflow-hidden">
+          
+          {/* Inner frame */}
+          <div className="absolute inset-2 border-[1.5px] border-[#cf030f]/30 rounded-[1.5rem] pointer-events-none"></div>
+
+          {/* Tiny Inner Corners (Fretwork) */}
+          <div className="absolute top-3 left-3 opacity-60"><FretworkCorner className="w-6 h-6 text-[#cf030f]" /></div>
+          <div className="absolute top-3 right-3 opacity-60"><FretworkCorner className="w-6 h-6 rotate-90 text-[#cf030f]" /></div>
+          <div className="absolute bottom-3 right-3 opacity-60"><FretworkCorner className="w-6 h-6 rotate-180 text-[#cf030f]" /></div>
+          <div className="absolute bottom-3 left-3 opacity-60"><FretworkCorner className="w-6 h-6 -rotate-90 text-[#cf030f]" /></div>
+          
+          <div className="relative z-10">
 
           {/* Success Banner */}
           {success ? (
@@ -116,7 +159,7 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
             <form onSubmit={handleSubmit} className="mt-8 space-y-6">
               
               {/* Inquiry Type Tabs */}
-              <div className="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-zinc-100/80 border border-zinc-200">
+              <div className="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-white/60 border border-[#D4AF37]/30 shadow-inner">
                 {[
                   { id: 'franchise', label: 'Franchise Inquiry', icon: Store },
                   { id: 'bulk_order', label: 'Bulk / Catering', icon: ShoppingBag },
@@ -128,10 +171,10 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
                       key={tab.id}
                       type="button"
                       onClick={() => setInquiryType(tab.id)}
-                      className={`py-2.5 px-3 rounded-xl font-heading font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      className={`py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                         inquiryType === tab.id
-                          ? 'bg-rose-600 text-white shadow-md'
-                          : 'text-zinc-600 hover:text-zinc-900 hover:bg-white/50'
+                          ? 'bg-[#cf030f] text-white shadow-lg shadow-[#cf030f]/30'
+                          : 'text-[#18572c] hover:bg-white hover:shadow-sm'
                       }`}
                     >
                       <IconComp className="w-3.5 h-3.5" />
@@ -147,52 +190,52 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
                 
                 {/* Full Name */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-700">Full Name *</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Full Name *</label>
                   <input
                     required
                     type="text"
                     placeholder="e.g. Juan Dela Cruz"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium"
                   />
                 </div>
 
                 {/* Email Address */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-700">Email Address *</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Email Address *</label>
                   <input
                     required
                     type="email"
                     placeholder="juandelacruz@gmail.com"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium"
                   />
                 </div>
 
                 {/* Mobile Phone Number */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-700">Mobile Phone Number *</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Mobile Phone Number *</label>
                   <input
                     required
                     type="tel"
                     placeholder="0917 123 4567"
                     value={formData.phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium"
                   />
                 </div>
 
                 {/* Target Location / City */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-700">Target Franchise Location / City</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Target Franchise Location / City</label>
                   <input
                     type="text"
                     placeholder="e.g. Quezon City / Manila / Cebu"
                     value={formData.targetCity}
                     onChange={(e) => setFormData(prev => ({ ...prev, targetCity: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium"
                   />
                 </div>
 
@@ -201,11 +244,11 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
               {/* Package Selection dropdown (if franchise type) */}
               {inquiryType === 'franchise' && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-700">Preferred Franchise Package</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Preferred Franchise Package</label>
                   <select
                     value={formData.selectedPackage}
                     onChange={(e) => setFormData(prev => ({ ...prev, selectedPackage: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-sm text-zinc-900 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all"
+                    className="w-full px-4 py-3.5 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium"
                   >
                     <option value="Food Cart Package">Food Cart Package (₱99,000)</option>
                     <option value="Mall Kiosk Package">Mall Kiosk Package (₱175,000)</option>
@@ -216,38 +259,41 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
 
               {/* Message Details */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-700">Message / Questions</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Message / Questions</label>
                 <textarea
                   rows={4}
                   placeholder="Tell us about your target location, target opening date, or any specific questions..."
                   value={formData.message}
                   onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-50 border border-zinc-200 text-sm text-zinc-900 placeholder:text-zinc-400 outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all"
+                  className="w-full px-4 py-3.5 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium resize-y"
                 />
               </div>
 
               {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-heading font-extrabold text-base shadow-lg shadow-rose-600/30 hover:shadow-rose-600/40 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Submitting Inquiry...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-5 h-5" />
-                    <span>Submit Inquiry Now</span>
-                  </>
-                )}
-              </button>
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#cf030f] to-[#8a020a] hover:from-[#a6020c] hover:to-[#5e0106] text-[#D4AF37] font-serif font-black text-lg uppercase tracking-wider shadow-lg shadow-[#cf030f]/30 hover:shadow-xl hover:shadow-[#cf030f]/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 border border-[#D4AF37]/40"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Submitting Inquiry...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5" />
+                      <span>Submit Inquiry Now</span>
+                    </>
+                  )}
+                </button>
+              </div>
 
             </form>
           )}
 
+          </div>
         </div>
 
       </div>
