@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Target, Compass, Heart, Shield, Users, TrendingUp, Handshake, CheckCircle2, Star } from 'lucide-react';
 import mascotImg from '../assets/mascot.webp';
+import { motion } from 'framer-motion';
 
 export default function AboutSection() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -38,7 +39,13 @@ export default function AboutSection() {
       <div className="absolute bottom-12 right-12 md:bottom-20 md:right-20 w-32 h-32 border-r-4 border-b-4 border-dotted border-[#cf030f]/60 opacity-60 hidden md:block"></div>
       <div className="absolute top-12 left-12 md:top-20 md:left-20 w-32 h-32 border-l-4 border-t-4 border-dotted border-[#cf030f]/60 opacity-30 hidden md:block"></div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+      <motion.div 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7 }}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20"
+      >
 
         {/* Custom Tabs Navigation */}
         <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-16 relative z-10">
@@ -217,7 +224,7 @@ export default function AboutSection() {
           )}
 
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

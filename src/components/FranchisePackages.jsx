@@ -1,6 +1,7 @@
 import React from 'react';
 import { Store, Check, ArrowRight, ShieldCheck, DollarSign, Award, Zap } from 'lucide-react';
 import { useCMS } from '../context/CMSContext';
+import { motion } from 'framer-motion';
 
 export default function FranchisePackages({ onSelectPackage }) {
   const { cms } = useCMS();
@@ -13,13 +14,20 @@ export default function FranchisePackages({ onSelectPackage }) {
       <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full border-[2px] border-[#D4AF37]/20 pointer-events-none"></div>
       <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] rounded-full border-[8px] border-[#D4AF37]/10 pointer-events-none"></div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <motion.div 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7 }}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+      >
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#cf030f]/10 text-[#cf030f] border border-[#cf030f]/20 text-xs font-black uppercase tracking-widest shadow-sm">
-            <Zap className="w-4 h-4" />
+          <div className="inline-flex items-center gap-4 text-[#cf030f] text-[10px] sm:text-xs font-black uppercase tracking-widest">
+            <span className="w-8 h-[2px] bg-[#cf030f]/60"></span>
             Turnkey Business Opportunity
+            <span className="w-8 h-[2px] bg-[#cf030f]/60"></span>
           </div>
           <h2 className="font-serif font-black text-4xl sm:text-5xl lg:text-6xl text-[#18572c] tracking-tight leading-tight">
             Choose Your <br className="hidden sm:block" /><span 
@@ -167,7 +175,7 @@ export default function FranchisePackages({ onSelectPackage }) {
           })}
         </div>
 
-      </div>
+      </motion.div>
     </section>
   );
 }

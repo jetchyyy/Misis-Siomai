@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import MisisSiomaiLogo from './MisisSiomaiLogo';
 import { useCMS } from '../context/CMSContext';
 import { Phone, Mail, MapPin, Share2, Heart } from 'lucide-react';
 
@@ -15,41 +14,27 @@ export default function Footer() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-[#D4AF37]/40">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pb-12 border-b border-[#D4AF37]/40 items-center">
           
           {/* Brand Info */}
-          <div className="md:col-span-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <MisisSiomaiLogo className="w-10 h-10" />
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="bg-[#18572c] p-3 rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
+                <img src="/mississiomai.png" alt="Misis Siomai Logo" className="w-16 h-16 object-contain" />
+              </div>
               <div>
-                <h3 className="font-serif font-black text-2xl text-[#18572c] tracking-wide">
+                <h3 className="font-serif font-black text-3xl text-[#18572c] tracking-wide drop-shadow-sm">
                   {about.brand_name || 'Misis Siomai Cebu'}
                 </h3>
-                <p className="text-[10px] text-[#cf030f] font-black tracking-widest uppercase mt-1">
+                <p className="text-xs text-[#cf030f] font-black tracking-widest uppercase mt-1">
                   {about.tagline || 'Ang Paboritong Siomai ng Bayan'}
                 </p>
               </div>
             </div>
-            <p className="text-xs text-zinc-700 leading-relaxed font-sans">
-              {about.story}
-            </p>
-          </div>
-
-          {/* Quick Page Links */}
-          <div className="md:col-span-3 space-y-4">
-            <h4 className="font-serif font-bold text-sm text-[#cf030f] uppercase tracking-widest">Quick Navigation</h4>
-            <ul className="space-y-3 text-xs font-medium text-zinc-700">
-              <li><Link to="/" className="hover:text-[#cf030f] transition-colors flex items-center gap-2"><span className="text-[#D4AF37]">•</span> Home Page</Link></li>
-              <li><Link to="/about" className="hover:text-[#cf030f] transition-colors flex items-center gap-2"><span className="text-[#D4AF37]">•</span> About Us (Mission & Vision)</Link></li>
-              <li><Link to="/packages" className="hover:text-[#cf030f] transition-colors flex items-center gap-2"><span className="text-[#D4AF37]">•</span> Franchise Packages</Link></li>
-              <li><Link to="/products" className="hover:text-[#cf030f] transition-colors flex items-center gap-2"><span className="text-[#D4AF37]">•</span> Products & Menu</Link></li>
-              <li><Link to="/branches" className="hover:text-[#cf030f] transition-colors flex items-center gap-2"><span className="text-[#D4AF37]">•</span> Branch Locations</Link></li>
-              <li><Link to="/contact" className="hover:text-[#cf030f] transition-colors flex items-center gap-2"><span className="text-[#D4AF37]">•</span> Official Contact Directory</Link></li>
-            </ul>
           </div>
 
           {/* Contact Details (from Business Card) */}
-          <div className="md:col-span-5 space-y-4">
+          <div className="space-y-4">
             <h4 className="font-serif font-bold text-sm text-[#cf030f] uppercase tracking-widest">Official Management Contact</h4>
             <div className="p-5 rounded-2xl bg-white border border-[#D4AF37]/40 space-y-3 text-xs text-zinc-700 shadow-sm">
               <p className="font-bold text-[#18572c] text-sm font-serif">

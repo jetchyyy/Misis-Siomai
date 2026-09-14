@@ -5,7 +5,7 @@ import { supabase, TENANT_ID } from '../lib/supabase';
 export const INITIAL_CMS = {
   about: {
     brand_name: 'Misis Siomai Cebu',
-    tagline: 'Ang Paboritong Siomai ng Bayan',
+    tagline: 'From our Kitchen to your Happiness.',
     mission: 'To empower aspiring Filipino micro-entrepreneurs and families by delivering authentic, 100% pure meat dimsum with zero royalty fees, low capital investment, and sustainable business growth.',
     vision: 'To be the most trusted and preferred dimsum food cart franchise nationwide, celebrated for exceptional taste, premium quality, and uplifting local communities.',
     story: 'Founded with a passionate mission: to serve hardworking Filipinos authentic, 100% meat-filled dimsum that is both delicious and accessible. Misis Siomai Cebu empowers entrepreneurs across the Visayas and nationwide to build high-margin, sustainable food businesses.',

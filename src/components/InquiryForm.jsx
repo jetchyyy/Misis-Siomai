@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, TENANT_ID } from '../lib/supabase';
 import { Send, CheckCircle2, Loader2, AlertCircle, Store, ShoppingBag, HelpCircle, PhoneCall, Mail } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-export default function InquiryForm({ initialType = 'franchise', preselectedPackage = '', onClose }) {
+export default function InquiryForm({ initialType = 'franchise', preselectedPackage = '', onClose, isModal = false }) {
   const [inquiryType, setInquiryType] = useState(initialType);
   const [formData, setFormData] = useState({
     name: '',
@@ -90,30 +91,149 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
     }
   };
 
+  // ─── Inner form content (shared) ─────────────────────────────────────────
+  const formContent = (
+    <div className="relative z-10 space-y-6">
+      {/* Success Banner */}
+      {success ? (
+        <div className="p-8 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-4 animate-fadeIn">
+          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-md">
+            <CheckCircle2 className="w-8 h-8" />
+          </div>
+          <h3 className="font-heading font-extrabold text-2xl text-emerald-900">
+            Mabuhay! Inquiry Submitted Successfully
+          </h3>
+          <p className="text-sm text-emerald-700 max-w-md mx-auto">
+            Thank you for your interest in Misis Siomai! Our franchise representative will call or email you shortly.
+          </p>
+          <button
+            onClick={() => setSuccess(false)}
+            className="mt-4 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+          >
+            Submit Another Inquiry
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Inquiry Type Tabs */}
+          <div className="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-white/60 border border-[#D4AF37]/30 shadow-inner">
+            {[
+              { id: 'franchise', label: 'Franchise Inquiry', icon: Store },
+              { id: 'bulk_order', label: 'Bulk / Catering', icon: ShoppingBag },
+              { id: 'general', label: 'General Inquiry', icon: HelpCircle },
+            ].map((tab) => {
+              const IconComp = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setInquiryType(tab.id)}
+                  className={`py-2.5 px-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    inquiryType === tab.id
+                      ? 'bg-[#cf030f] text-white shadow-lg shadow-[#cf030f]/30'
+                      : 'text-[#18572c] hover:bg-white hover:shadow-sm'
+                  }`}
+                >
+                  <IconComp className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Form Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Full Name *</label>
+              <input required type="text" placeholder="e.g. Juan Dela Cruz" value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Email Address *</label>
+              <input required type="email" placeholder="juandelacruz@gmail.com" value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Mobile Phone *</label>
+              <input required type="tel" placeholder="0917 123 4567" value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Target City</label>
+              <input type="text" placeholder="e.g. Cebu City / Manila" value={formData.targetCity}
+                onChange={(e) => setFormData(prev => ({ ...prev, targetCity: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium" />
+            </div>
+          </div>
+
+          {/* Package Selection */}
+          {inquiryType === 'franchise' && (
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Preferred Package</label>
+              <select value={formData.selectedPackage}
+                onChange={(e) => setFormData(prev => ({ ...prev, selectedPackage: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium">
+                <option value="Food Cart Package">Food Cart Package (₱99,000)</option>
+                <option value="Mall Kiosk Package">Mall Kiosk Package (₱175,000)</option>
+                <option value="Cloud Kitchen & Delivery Hub">Cloud Kitchen & Delivery Hub (₱250,000)</option>
+              </select>
+            </div>
+          )}
+
+          {/* Message */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Message / Questions</label>
+            <textarea rows={3} placeholder="Tell us about your target location, opening date, or any questions..."
+              value={formData.message}
+              onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+              className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium resize-y" />
+          </div>
+
+          {/* Submit */}
+          <button type="submit" disabled={loading}
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#cf030f] to-[#8a020a] hover:from-[#a6020c] hover:to-[#5e0106] text-[#D4AF37] font-serif font-black text-lg uppercase tracking-wider shadow-lg shadow-[#cf030f]/30 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 border border-[#D4AF37]/40">
+            {loading ? (<><Loader2 className="w-5 h-5 animate-spin" /><span>Submitting...</span></>) : (<><Send className="w-5 h-5" /><span>Submit Inquiry Now</span></>)}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+
+  // ─── Modal render path: just the bare form ────────────────────────────────
+  if (isModal) {
+    return formContent;
+  }
+
+  // ─── Page section render path: full green section with decorations ────────
   return (
     <section id="contact" className="py-20 md:py-32 bg-[#18572c] relative overflow-hidden border-t border-[#D4AF37]/20">
-      
-      {/* Background Image Container - User can replace the URL here! */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 mix-blend-overlay pointer-events-none"
-        style={{ backgroundImage: 'url("PUT_YOUR_BACKGROUND_IMAGE_URL_HERE")' }}
-      ></div>
-      {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#18572c] via-transparent to-[#18572c] opacity-80 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay pointer-events-none"
+        style={{ backgroundImage: 'url("PUT_YOUR_BACKGROUND_IMAGE_URL_HERE")' }} />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#18572c] via-transparent to-[#18572c] opacity-80 pointer-events-none" />
 
-      {/* 4 Decorative Corners Pinned to Section Edges */}
       <div className="absolute top-2 left-2 md:top-5 md:left-5 hidden sm:block"><FretworkCorner className="w-12 h-12 md:w-16 md:h-16 text-[#D4AF37]" /></div>
       <div className="absolute top-2 right-2 md:top-5 md:right-5 hidden sm:block"><FretworkCorner className="w-12 h-12 md:w-16 md:h-16 rotate-90 text-[#D4AF37]" /></div>
       <div className="absolute bottom-2 right-2 md:bottom-5 md:right-5 hidden sm:block"><FretworkCorner className="w-12 h-12 md:w-16 md:h-16 rotate-180 text-[#D4AF37]" /></div>
       <div className="absolute bottom-2 left-2 md:bottom-5 md:left-5 hidden sm:block"><FretworkCorner className="w-12 h-12 md:w-16 md:h-16 -rotate-90 text-[#D4AF37]" /></div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7 }}
+        className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+      >
         
         {/* Form Title */}
         <div className="text-center space-y-4 mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 text-xs font-black uppercase tracking-widest shadow-sm">
-            <PhoneCall className="w-4 h-4" />
+          <div className="inline-flex items-center gap-4 text-[#D4AF37] text-[10px] sm:text-xs font-black uppercase tracking-widest">
+            <span className="w-8 h-[2px] bg-[#D4AF37]/60"></span>
             Get In Touch With Us
+            <span className="w-8 h-[2px] bg-[#D4AF37]/60"></span>
           </div>
           <h2 className="font-serif font-black text-4xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight">
             Start Your <br className="hidden sm:block" /><span 
@@ -307,7 +427,7 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
           </div>
         </div>
 
-      </div>
+      </motion.div>
     </section>
   );
 }

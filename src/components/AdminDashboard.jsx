@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase, TENANT_ID } from '../lib/supabase';
 import { useCMS } from '../context/CMSContext';
-import MisisSiomaiLogo from './MisisSiomaiLogo';
 import {
   Users, Store, ShoppingBag, HelpCircle, Search, Filter,
   RefreshCw, ExternalLink, Calendar, Mail, Phone, MapPin,
@@ -392,7 +391,7 @@ export default function AdminDashboard() {
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-600 via-rose-600 to-amber-500" />
           <div className="text-center space-y-3">
             <div className="w-16 h-16 mx-auto">
-              <MisisSiomaiLogo className="w-full h-full" />
+              <img src="/mississiomai.png" alt="Misis Siomai Logo" className="w-full h-full object-contain" />
             </div>
             <div className="space-y-1">
               <div className="flex items-center justify-center gap-2">
@@ -505,7 +504,7 @@ export default function AdminDashboard() {
         <div>
 
           <div className="p-6 border-b border-zinc-800 flex items-center gap-3">
-            <MisisSiomaiLogo className="w-10 h-10" />
+            <img src="/mississiomai.png" alt="Misis Siomai Logo" className="w-10 h-10 object-contain" />
             <div>
               <h2 className="font-heading font-extrabold text-base text-white tracking-wide">Misis Siomai</h2>
               <span className="px-2 py-0.5 rounded text-[9px] font-extrabold tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase">CMS CONTROL</span>

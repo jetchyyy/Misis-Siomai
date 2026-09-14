@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Flame, Star, ShoppingBag, ArrowRight, Sparkles } from 'lucide-react';
 import { useCMS } from '../context/CMSContext';
+import { motion } from 'framer-motion';
 
 export default function MenuShowcase({ onOpenInquiryModal }) {
   const { cms } = useCMS();
@@ -63,14 +64,21 @@ export default function MenuShowcase({ onOpenInquiryModal }) {
         <Lantern scale={0.9} className="-mt-4" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <motion.div 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7 }}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+      >
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-10 border-b border-[#D4AF37]/30">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] text-xs font-bold uppercase tracking-widest shadow-sm">
-              <Flame className="w-4 h-4" />
+            <div className="inline-flex items-center gap-4 text-[#D4AF37] text-[10px] sm:text-xs font-black uppercase tracking-widest">
+              <span className="w-8 h-[2px] bg-[#D4AF37]/60"></span>
               Signature Dimsum Menu
+              <span className="w-8 h-[2px] bg-[#D4AF37]/60"></span>
             </div>
             <h2 className="font-serif font-black text-4xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight">
               Our Bestselling <br className="hidden sm:block" /><span 
@@ -167,7 +175,7 @@ export default function MenuShowcase({ onOpenInquiryModal }) {
           ))}
         </div>
 
-      </div>
+      </motion.div>
     </section>
   );
 }

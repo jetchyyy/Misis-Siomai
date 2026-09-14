@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Phone, Menu, X, ChevronRight, Store } from 'lucide-react';
-import MisisSiomaiLogo from './MisisSiomaiLogo';
+import { Menu, X, ChevronRight, Store } from 'lucide-react';
 import { useCMS } from '../context/CMSContext';
 
 export default function Navbar({ onOpenFranchiseModal }) {
@@ -63,7 +62,7 @@ export default function Navbar({ onOpenFranchiseModal }) {
           
           {/* Brand Logo */}
           <a href="#hero" onClick={(e) => handleScrollTo(e, 'hero')} className="flex items-center gap-3 group">
-            <MisisSiomaiLogo className="w-12 h-12 group-hover:scale-105 transition-transform duration-300 drop-shadow-md" />
+            <img src="/mississiomai.png" alt="Misis Siomai Cebu Logo" className="w-12 h-12 group-hover:scale-105 transition-transform duration-300 drop-shadow-md object-contain" />
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-serif font-black text-2xl tracking-tight text-white drop-shadow-sm">
@@ -99,14 +98,6 @@ export default function Navbar({ onOpenFranchiseModal }) {
 
           {/* Action CTAs */}
           <div className="hidden md:flex items-center gap-4">
-            <a 
-              href={`tel:${phonePrimary.replace(/\s+/g, '')}`} 
-              className="flex items-center gap-2 text-xs font-bold text-white hover:text-[#d4af37] transition-colors px-3 py-1.5 rounded-md border border-white/20 hover:border-[#d4af37]/50"
-            >
-              <Phone className="w-4 h-4" />
-              <span>{phonePrimary}</span>
-            </a>
-
             <button
               onClick={onOpenFranchiseModal}
               className="relative flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#cf030f] hover:bg-[#a5020c] text-white font-bold text-sm shadow-lg shadow-[#cf030f]/30 hover:shadow-[#cf030f]/50 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer border border-[#cf030f]"
@@ -142,13 +133,6 @@ export default function Navbar({ onOpenFranchiseModal }) {
             </a>
           ))}
           <div className="pt-4 mt-2 border-t border-white/10 flex flex-col gap-3 px-2">
-            <a 
-              href={`tel:${phonePrimary.replace(/\s+/g, '')}`} 
-              className="flex items-center justify-center gap-2 text-sm font-bold text-white py-3 rounded-lg border border-white/20 hover:bg-[#113d1e]"
-            >
-              <Phone className="w-4 h-4" />
-              <span>Call Us: {phonePrimary}</span>
-            </a>
             <button
               onClick={() => {
                 setMobileMenuOpen(false);

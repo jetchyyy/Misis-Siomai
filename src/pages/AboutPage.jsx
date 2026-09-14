@@ -2,7 +2,6 @@ import React from 'react';
 import { useCMS } from '../context/CMSContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import MisisSiomaiLogo from '../components/MisisSiomaiLogo';
 import { Target, Compass, Award, CheckCircle2, ShieldCheck, HeartHandshake, Phone, Mail, MapPin } from 'lucide-react';
 
 export default function AboutPage({ onOpenFranchiseModal }) {
@@ -19,8 +18,8 @@ export default function AboutPage({ onOpenFranchiseModal }) {
           {/* Header Banner */}
           <section className="bg-gradient-to-b from-emerald-900 to-emerald-950 text-white py-20 relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-4">
-              <div className="mx-auto w-24 h-24 mb-4">
-                <MisisSiomaiLogo className="w-full h-full" />
+              <div className="absolute inset-0 bg-[#cf030f]/5 flex items-center justify-center p-12">
+                <img src="/mississiomai.png" alt="Misis Siomai Logo" className="w-full h-full object-contain drop-shadow-xl" />
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-800/80 border border-emerald-700 text-emerald-300 text-xs font-bold uppercase tracking-widest">
                 <Award className="w-4 h-4 text-emerald-400" />

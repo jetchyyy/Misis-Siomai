@@ -1,6 +1,32 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useCMS } from '../context/CMSContext';
 import siomaiBg from '../assets/siomai.webp';
+import { motion, useInView, useSpring, useTransform } from 'framer-motion';
+
+function AnimatedCounter({ text }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+  
+  const match = String(text).match(/^([^\d]*)(\d+)([^\d]*)$/);
+  const prefix = match ? match[1] : '';
+  const to = match ? parseInt(match[2], 10) : 0;
+  const suffix = match ? match[3] : String(text);
+
+  const spring = useSpring(0, { stiffness: 40, damping: 20 });
+  const display = useTransform(spring, (current) => {
+    if (!match) return suffix;
+    return prefix + Math.floor(current) + suffix;
+  });
+
+  useEffect(() => {
+    if (isInView && match) {
+      spring.set(to);
+    }
+  }, [isInView, spring, to, match]);
+
+  if (!match) return <span>{text}</span>;
+  return <motion.span ref={ref}>{display}</motion.span>;
+}
 
 export default function Hero({ onOpenFranchiseModal }) {
   const { cms } = useCMS();
@@ -64,7 +90,7 @@ export default function Hero({ onOpenFranchiseModal }) {
               `
             }}
           >
-            {about.brand_name || 'Misis Siomai Cebu'}
+            {home.hero_title || 'Start Your Profitable Food Cart Business Today'}
           </h1>
           
           <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-snug drop-shadow-lg">
@@ -93,25 +119,52 @@ export default function Hero({ onOpenFranchiseModal }) {
         </div>
       </div>
       
-      {/* Stats Counter Bar - Darkened to match aesthetic */}
-      <div className="bg-[#111111] border-t border-zinc-800 py-10 relative z-20 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Stats Counter Bar - Red to match aesthetic */}
+      <div className="bg-[#cf030f] border-t-2 border-b-2 border-[#D4AF37]/40 py-10 relative z-20 shadow-2xl overflow-hidden">
+        
+        {/* SVG Dragon Scales Line Pattern */}
+        <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none mix-blend-screen" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="dragonScales" width="40" height="20" patternUnits="userSpaceOnUse" patternTransform="scale(2)">
+              {/* Row 1 */}
+              <path d="M0,0 a20,20 0 0,0 40,0" fill="none" stroke="#D4AF37" strokeWidth="1" />
+              {/* Row 2 (offset for overlap) */}
+              <path d="M-20,10 a20,20 0 0,0 40,0" fill="none" stroke="#D4AF37" strokeWidth="1" />
+              <path d="M20,10 a20,20 0 0,0 40,0" fill="none" stroke="#D4AF37" strokeWidth="1" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#dragonScales)" />
+        </svg>
+        
+        {/* Golden glow edges */}
+        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#cf030f] to-transparent pointer-events-none"></div>
+        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#cf030f] to-transparent pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div className="space-y-2">
-              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#cf030f]">{home.stat_branches || '50+'}</div>
-              <div className="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">Active Stores</div>
+              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#D4AF37]" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
+                <AnimatedCounter text={home.stat_branches || '50+'} />
+              </div>
+              <div className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Active Stores</div>
             </div>
             <div className="space-y-2">
-              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-white">10k+</div>
-              <div className="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">Daily Pieces Served</div>
+              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
+                <AnimatedCounter text="10k+" />
+              </div>
+              <div className="text-xs sm:text-sm font-bold text-[#D4AF37] uppercase tracking-wider">Daily Pieces Served</div>
             </div>
             <div className="space-y-2">
-              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#cf030f]">₱0</div>
-              <div className="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">Royalty Fees</div>
+              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#D4AF37]" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
+                <AnimatedCounter text="₱0" />
+              </div>
+              <div className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Royalty Fees</div>
             </div>
             <div className="space-y-2">
-              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#d4af37]">{home.stat_satisfaction || '99%'}</div>
-              <div className="text-xs sm:text-sm font-semibold text-zinc-400 uppercase tracking-wider">Meat Guarantee</div>
+              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#D4AF37]" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
+                <AnimatedCounter text={home.stat_satisfaction || '99%'} />
+              </div>
+              <div className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Meat Guarantee</div>
             </div>
           </div>
         </div>

@@ -9,7 +9,9 @@ import BranchesPage from './pages/BranchesPage';
 import ContactPage from './pages/ContactPage';
 import AdminDashboard from './components/AdminDashboard';
 import InquiryForm from './components/InquiryForm';
-import { X, Utensils } from 'lucide-react';
+import SplashScreen from './components/SplashScreen';
+import { X, MessageCircleQuestion } from 'lucide-react';
+import ChatWidget from './components/ChatWidget';
 
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -24,7 +26,8 @@ export default function App() {
 
   return (
     <CMSProvider>
-      <Routes>
+      <SplashScreen>
+        <Routes>
         <Route path="/" element={<LandingPage onOpenFranchiseModal={handleOpenFranchiseModal} />} />
         <Route path="/about" element={<AboutPage onOpenFranchiseModal={handleOpenFranchiseModal} />} />
         <Route path="/packages" element={<PackagesPage onOpenFranchiseModal={handleOpenFranchiseModal} />} />
@@ -37,35 +40,48 @@ export default function App() {
 
       {/* Global Inquiry Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/70 backdrop-blur-sm animate-fadeIn">
-          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-rose-900/10 overflow-hidden max-h-[90vh] overflow-y-auto">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-zinc-950/70 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false); }}
+        >
+          <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
             
-            <div className="px-6 py-4 bg-gradient-to-r from-rose-600 to-rose-700 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Utensils className="w-5 h-5" />
-                <span className="font-heading font-extrabold text-base">
-                  Misis Siomai Franchise Inquiry
-                </span>
+            {/* Sticky Header */}
+            <div className="px-6 py-4 bg-gradient-to-r from-[#18572c] to-emerald-700 text-white flex items-center justify-between rounded-t-2xl shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/10 border border-white/20 p-1.5 rounded-lg shrink-0">
+                  <img src="/mississiomai.png" alt="Misis Siomai Logo" className="w-7 h-7 object-contain" />
+                </div>
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-300">— Misis Siomai Cebu —</p>
+                  <h2 className="font-serif font-black text-base leading-tight text-white">Franchise Inquiry Form</h2>
+                </div>
               </div>
               <button
                 onClick={() => setModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-white/20 text-white transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-white/20 text-white transition-colors cursor-pointer shrink-0"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6">
+            {/* Scrollable Form Body */}
+            <div className="overflow-y-auto flex-1 p-6">
               <InquiryForm
                 initialType={modalInquiryType}
                 preselectedPackage={selectedPkg}
                 onClose={() => setModalOpen(false)}
+                isModal={true}
               />
             </div>
 
           </div>
         </div>
       )}
+      {/* Interactive Chat Widget */}
+      <ChatWidget />
+
+      </SplashScreen>
     </CMSProvider>
   );
 }

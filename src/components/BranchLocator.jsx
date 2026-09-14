@@ -4,6 +4,7 @@ import {
   Navigation, Copy, Check, Filter, X, Building2, ChevronDown
 } from 'lucide-react';
 import { useCMS } from '../context/CMSContext';
+import { motion } from 'framer-motion';
 
 export default function BranchLocator() {
   const { cms } = useCMS();
@@ -88,14 +89,21 @@ export default function BranchLocator() {
       <div className="absolute bottom-2 right-2 md:bottom-5 md:right-5 hidden sm:block"><FretworkCorner className="w-12 h-12 md:w-16 md:h-16 rotate-180" /></div>
       <div className="absolute bottom-2 left-2 md:bottom-5 md:left-5 hidden sm:block"><FretworkCorner className="w-12 h-12 md:w-16 md:h-16 -rotate-90" /></div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10">
+      <motion.div 
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7 }}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-10"
+      >
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-[#D4AF37]/30">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 text-xs font-black uppercase tracking-widest shadow-sm">
-              <MapPin className="w-4 h-4" />
+            <div className="inline-flex items-center gap-4 text-[#D4AF37] text-[10px] sm:text-xs font-black uppercase tracking-widest">
+              <span className="w-8 h-[2px] bg-[#D4AF37]/60"></span>
               <span>Store Network • {activeCount} Active Branches</span>
+              <span className="w-8 h-[2px] bg-[#D4AF37]/60"></span>
             </div>
             <h2 className="font-serif font-black text-4xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-tight">
               Find a <br className="hidden sm:block" /><span 
@@ -348,7 +356,7 @@ export default function BranchLocator() {
           </div>
         )}
 
-      </div>
+      </motion.div>
     </section>
   );
 }
