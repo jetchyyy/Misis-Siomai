@@ -1,105 +1,87 @@
 import React from 'react';
-import { Utensils, Phone, Mail, MapPin, Flame, ArrowUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import MisisSiomaiLogo from './MisisSiomaiLogo';
+import { useCMS } from '../context/CMSContext';
+import { Phone, Mail, MapPin, Share2, Heart } from 'lucide-react';
 
 export default function Footer() {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const { cms } = useCMS();
+  const { about, contact } = cms;
 
   return (
-    <footer className="bg-zinc-950 text-white pt-16 pb-12 border-t border-zinc-800">
+    <footer className="bg-zinc-950 text-zinc-300 pt-16 pb-12 border-t border-zinc-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-zinc-800">
+        
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-zinc-800">
           
-          {/* Brand Col */}
-          <div className="lg:col-span-2 space-y-4">
+          {/* Brand Info */}
+          <div className="md:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white font-bold shadow-md">
-                <Utensils className="w-5 h-5" />
+              <MisisSiomaiLogo className="w-10 h-10" />
+              <div>
+                <h3 className="font-heading font-extrabold text-xl text-white">
+                  {about.brand_name || 'Misis Siomai Cebu'}
+                </h3>
+                <p className="text-xs text-amber-400 font-bold tracking-wide uppercase">
+                  {about.tagline || 'Ang Paboritong Siomai ng Bayan'}
+                </p>
               </div>
-              <span className="font-heading font-black text-2xl tracking-tight text-white">
-                Misis<span className="text-rose-500">Siomai</span>
-              </span>
             </div>
-            <p className="text-xs text-zinc-400 max-w-sm leading-relaxed">
-              Ang Paboritong Siomai ng Bayan. Serving authentic 100% pork & beef dimsum daily across 50+ franchise food cart locations nationwide.
+            <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+              {about.story}
             </p>
-            <div className="flex items-center gap-2 pt-2 text-xs font-bold text-amber-400">
-              <Flame className="w-4 h-4 text-amber-500" />
-              <span>Zero Royalty Fees • 100% Real Meat Guarantee</span>
-            </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-3">
-            <h4 className="font-heading font-extrabold text-sm uppercase tracking-wider text-rose-500">Quick Links</h4>
-            <ul className="space-y-2 text-xs text-zinc-400">
-              <li><a href="#hero" className="hover:text-white transition-colors">Home Page</a></li>
-              <li><a href="#menu" className="hover:text-white transition-colors">Menu Showcase</a></li>
-              <li><a href="#franchise" className="hover:text-white transition-colors">Franchise Packages</a></li>
-              <li><a href="#branches" className="hover:text-white transition-colors">Branch Locations</a></li>
-              <li><a href="#contact" className="hover:text-white transition-colors">Contact Us</a></li>
+          {/* Quick Page Links */}
+          <div className="md:col-span-3 space-y-3">
+            <h4 className="font-heading font-bold text-sm text-white uppercase tracking-wider">Quick Navigation</h4>
+            <ul className="space-y-2 text-xs font-medium text-zinc-400">
+              <li><Link to="/" className="hover:text-rose-400 transition-colors">Home Page</Link></li>
+              <li><Link to="/about" className="hover:text-rose-400 transition-colors">About Us (Mission & Vision)</Link></li>
+              <li><Link to="/packages" className="hover:text-rose-400 transition-colors">Franchise Packages</Link></li>
+              <li><Link to="/products" className="hover:text-rose-400 transition-colors">Products & Menu</Link></li>
+              <li><Link to="/branches" className="hover:text-rose-400 transition-colors">Branch Locations</Link></li>
+              <li><Link to="/contact" className="hover:text-rose-400 transition-colors">Official Contact Directory</Link></li>
+              <li><Link to="/admin" className="hover:text-rose-400 transition-colors text-amber-400 font-bold">Admin Portal</Link></li>
             </ul>
           </div>
 
-          {/* Franchise Hotline */}
-          <div className="space-y-3">
-            <h4 className="font-heading font-extrabold text-sm uppercase tracking-wider text-rose-500">Franchise Hotline</h4>
-            <ul className="space-y-2.5 text-xs text-zinc-400">
-              <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-rose-500 shrink-0" />
-                <span>(02) 8123-4567</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-rose-500 shrink-0" />
-                <span>+63 917 123 4567</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-rose-500 shrink-0" />
-                <span>franchise@misissiomai.com</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                <span>Quezon City, Metro Manila, Philippines</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Operational Hours */}
-          <div className="space-y-3">
-            <h4 className="font-heading font-extrabold text-sm uppercase tracking-wider text-rose-500">Head Office Hours</h4>
-            <div className="p-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 space-y-1.5">
-              <div className="flex justify-between">
-                <span>Mon - Fri:</span>
-                <span className="text-white font-semibold">8:00 AM - 6:00 PM</span>
+          {/* Contact Details (from Business Card) */}
+          <div className="md:col-span-5 space-y-3">
+            <h4 className="font-heading font-bold text-sm text-white uppercase tracking-wider">Official Management Contact</h4>
+            <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-2 text-xs text-zinc-300">
+              <p className="font-bold text-rose-400 text-sm">
+                General Manager: <span className="text-white">{contact.general_manager || 'Lendice Marie A. Cal'}</span>
+              </p>
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span>{contact.address}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Saturday:</span>
-                <span className="text-white font-semibold">9:00 AM - 3:00 PM</span>
+              <div className="flex items-center gap-2 font-mono text-amber-300">
+                <Phone className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>{(contact.phones || []).join(' / ')}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Sunday:</span>
-                <span className="text-rose-400 font-semibold">Closed</span>
+              <div className="flex items-center gap-2 text-zinc-300">
+                <Mail className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{(contact.emails || []).join(' / ')}</span>
+              </div>
+              <div className="flex items-center gap-2 text-blue-400 font-semibold pt-1">
+                <Share2 className="w-4 h-4 text-blue-500 shrink-0" />
+                <a href={contact.facebook_url || 'https://facebook.com/MisisSiomaiCebu'} target="_blank" rel="noreferrer" className="hover:underline">
+                  {contact.facebook || 'Misis Siomai Cebu'}
+                </a>
               </div>
             </div>
           </div>
 
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
-          <div>
-            © {new Date().getFullYear()} Misis Siomai Philippines. All Rights Reserved.
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={scrollToTop}
-              className="p-2 rounded-xl bg-zinc-900 hover:bg-rose-600 text-zinc-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
-            >
-              <span>Back to top</span>
-              <ArrowUp className="w-4 h-4" />
-            </button>
-          </div>
+        {/* Bottom copyright */}
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-4">
+          <p>© {new Date().getFullYear()} {about.brand_name || 'Misis Siomai Cebu'}. All rights reserved.</p>
+          <p className="flex items-center gap-1">
+            Crafted with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" /> for Filipino Entrepreneurs
+          </p>
         </div>
 
       </div>

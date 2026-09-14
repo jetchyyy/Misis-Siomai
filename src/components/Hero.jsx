@@ -1,7 +1,11 @@
 import React from 'react';
-import { Flame, CheckCircle2, ArrowRight, TrendingUp, Store, ShieldCheck, Sparkles } from 'lucide-react';
+import { Flame, CheckCircle2, ArrowRight, TrendingUp, Store, Sparkles } from 'lucide-react';
+import { useCMS } from '../context/CMSContext';
 
 export default function Hero({ onOpenFranchiseModal }) {
+  const { cms } = useCMS();
+  const { home, about } = cms;
+
   return (
     <section id="hero" className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-b from-amber-50/50 via-[#FFFDF7] to-[#FFFDF7]">
       
@@ -18,32 +22,30 @@ export default function Hero({ onOpenFranchiseModal }) {
             {/* Top Proof Tag */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-100/80 border border-rose-300/60 text-rose-800 text-xs font-bold shadow-xs">
               <Sparkles className="w-4 h-4 text-rose-600 animate-pulse" />
-              <span>100% Real Pork & Beef • No Extenders • 50+ Branches Nationwide</span>
+              <span>{home.badge || '100% Real Pork & Beef • No Extenders • Fast ROI'}</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="font-heading font-black text-4xl sm:text-5xl lg:text-6xl text-zinc-900 tracking-tight leading-[1.15]">
-              Ang Paboritong <br className="hidden sm:block" />
+              {about.brand_name || 'Misis Siomai Cebu'} <br className="hidden sm:block" />
               <span className="bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 bg-clip-text text-transparent">
-                Siomai ng Bayan
+                {about.tagline || 'Ang Paboritong Siomai ng Bayan'}
               </span>
             </h1>
 
             {/* Subtext */}
             <p className="text-base sm:text-lg text-zinc-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
-              Indulge in juicy, authentic steamed & crispy fried dimsum crafted daily with 100% pure pork & beef. Own a high-margin food cart franchise with <strong className="text-zinc-900 font-semibold">zero royalty fees</strong> and fast return on investment!
+              {home.hero_subtitle || 'Indulge in juicy, authentic steamed & crispy fried dimsum crafted daily with 100% pure pork & beef. Own a high-margin food cart franchise with zero royalty fees!'}
             </p>
 
             {/* Bullet Proof Points */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 max-w-xl mx-auto lg:mx-0 text-left">
-              {[
+              {(about.values || [
                 '100% Pure Meat Quality',
                 'Zero Royalty Fees',
-                'Free Staff Training',
-                'Turnkey Store Setup',
-                'High Profit Margin',
-                '3-6 Months Target ROI',
-              ].map((item, idx) => (
+                'Community Empowerment',
+                'Fast Return on Investment'
+              ]).map((item, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-zinc-800">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>{item}</span>
@@ -57,25 +59,9 @@ export default function Hero({ onOpenFranchiseModal }) {
                 onClick={onOpenFranchiseModal}
                 className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-heading font-extrabold text-base shadow-xl shadow-rose-600/30 hover:shadow-rose-600/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
               >
-                <span>Inquire Franchise Now</span>
+                <span>{home.cta_button || 'Inquire Franchise Now'}</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-              <a
-                href="#menu"
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white border-2 border-zinc-200 hover:border-rose-300 text-zinc-800 font-heading font-bold text-base shadow-xs hover:bg-rose-50/50 transition-all duration-300 text-center"
-              >
-                View Menu Showcase
-              </a>
-            </div>
-
-            {/* Quick Franchise Teaser Badge */}
-            <div className="pt-4 flex items-center justify-center lg:justify-start gap-4 text-xs text-zinc-500">
-              <div className="flex -space-x-2 overflow-hidden">
-                <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Franchisee" />
-                <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Franchisee" />
-                <img className="inline-block h-8 w-8 rounded-full ring-2 ring-white" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="Franchisee" />
-              </div>
-              <span className="font-medium text-zinc-700">Joined by <span className="font-bold text-rose-600">50+ successful franchisees</span> across Metro Manila & provinces!</span>
             </div>
 
           </div>
@@ -124,7 +110,7 @@ export default function Hero({ onOpenFranchiseModal }) {
                 </div>
                 <div>
                   <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Fast ROI Target</div>
-                  <div className="font-heading font-extrabold text-lg text-emerald-600">3 to 6 Months</div>
+                  <div className="font-heading font-extrabold text-lg text-emerald-600">{home.stat_roi_months || '3 to 6'} Months</div>
                 </div>
               </div>
 
@@ -136,7 +122,7 @@ export default function Hero({ onOpenFranchiseModal }) {
         {/* Stats Counter Bar */}
         <div className="mt-16 pt-10 border-t border-zinc-200/80 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           <div className="space-y-1">
-            <div className="font-heading font-extrabold text-3xl sm:text-4xl text-rose-600">50+</div>
+            <div className="font-heading font-extrabold text-3xl sm:text-4xl text-rose-600">{home.stat_branches || '50+'}</div>
             <div className="text-xs sm:text-sm font-semibold text-zinc-600">Active Stores Nationwide</div>
           </div>
           <div className="space-y-1">
@@ -148,7 +134,7 @@ export default function Hero({ onOpenFranchiseModal }) {
             <div className="text-xs sm:text-sm font-semibold text-zinc-600">Royalty & Renewal Fees</div>
           </div>
           <div className="space-y-1">
-            <div className="font-heading font-extrabold text-3xl sm:text-4xl text-amber-500">100%</div>
+            <div className="font-heading font-extrabold text-3xl sm:text-4xl text-amber-500">{home.stat_satisfaction || '99%'}</div>
             <div className="text-xs sm:text-sm font-semibold text-zinc-600">Pure Meat Guarantee</div>
           </div>
         </div>
