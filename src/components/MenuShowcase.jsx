@@ -133,6 +133,8 @@ export default function MenuShowcase({ onOpenInquiryModal }) {
                   <img
                     src={item.image_url || 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&q=80&w=600'}
                     alt={item.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                   />
                   {/* Image Gradient Overlay blending into beige card */}

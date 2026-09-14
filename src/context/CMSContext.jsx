@@ -155,12 +155,50 @@ export const INITIAL_CMS = {
 
 const CMSContext = createContext(null);
 
+// ─── Cache helpers ──────────────────────────────────────────────────────────
+const CACHE_KEY = `cms_cache_${TENANT_ID}`;
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function readCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { data, timestamp } = JSON.parse(raw);
+    if (Date.now() - timestamp > CACHE_TTL_MS) return null; // stale
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+  } catch {
+    // Ignore quota errors silently
+  }
+}
+
+function clearCache() {
+  try { localStorage.removeItem(CACHE_KEY); } catch {}
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function CMSProvider({ children }) {
   const [cms, setCms] = useState(INITIAL_CMS);
   const [loading, setLoading] = useState(true);
 
-  // Sync CMS data from Supabase
+  // Sync CMS data from Supabase (only called when cache is stale/missing)
   const loadCMSFromSupabase = async () => {
+    // 1. Serve from cache first (instant, zero egress)
+    const cached = readCache();
+    if (cached) {
+      setCms(prev => ({ ...prev, ...cached }));
+      setLoading(false);
+      return; // ← skip Supabase entirely
+    }
+
+    // 2. Cache miss — fetch from Supabase and populate cache
     try {
       const { data, error } = await supabase
         .from('site_settings')
@@ -173,10 +211,8 @@ export function CMSProvider({ children }) {
           remoteSettings[row.section_key] = row.content;
         });
 
-        setCms(prev => ({
-          ...prev,
-          ...remoteSettings
-        }));
+        setCms(prev => ({ ...prev, ...remoteSettings }));
+        writeCache(remoteSettings); // save for next visit
       }
     } catch (err) {
       console.warn('Could not sync remote CMS settings from Supabase, using local defaults:', err);
@@ -189,12 +225,15 @@ export function CMSProvider({ children }) {
     loadCMSFromSupabase();
   }, []);
 
-  // Update a section in CMS and sync to Supabase
+  // Update a section in CMS, sync to Supabase, and bust the cache
   const updateSection = async (sectionKey, newContent) => {
     setCms(prev => ({
       ...prev,
       [sectionKey]: newContent
     }));
+
+    // Bust cache so the next page load re-fetches fresh data
+    clearCache();
 
     try {
       await supabase
@@ -205,6 +244,16 @@ export function CMSProvider({ children }) {
           content: newContent,
           updated_at: new Date().toISOString()
         }, { onConflict: 'tenant_id,section_key' });
+
+      // After a successful save, rebuild the cache with the updated state
+      // so the *next* visitor gets the fresh version without an extra query
+      setCms(prev => {
+        const updated = { ...prev, [sectionKey]: newContent };
+        // Extract only the remote-overridable keys for caching
+        const { about, contact, home, packages, products, branches } = updated;
+        writeCache({ about, contact, home, packages, products, branches });
+        return updated;
+      });
     } catch (err) {
       console.error(`Failed to update ${sectionKey} in Supabase:`, err);
     }
