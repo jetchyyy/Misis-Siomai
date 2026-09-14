@@ -35,29 +35,28 @@ export default function Footer() {
 
           {/* Contact Details (from Business Card) */}
           <div className="space-y-4">
-            <h4 className="font-serif font-bold text-sm text-[#cf030f] uppercase tracking-widest">Official Management Contact</h4>
-            <div className="p-5 rounded-2xl bg-white border border-[#D4AF37]/40 space-y-3 text-xs text-zinc-700 shadow-sm">
-              <p className="font-bold text-[#18572c] text-sm font-serif">
-                General Manager: <span className="text-zinc-900">{contact.general_manager || 'Lendice Marie A. Cal'}</span>
-              </p>
-              <div className="flex items-start gap-3 mt-4">
-                <MapPin className="w-4 h-4 text-[#cf030f] shrink-0 mt-0.5" />
-                <span>{contact.address}</span>
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#cf030f] mb-4">Official Management Contact</h4>
+            <div className="space-y-3">
+              <div className="flex items-start gap-2.5 text-xs text-zinc-600">
+                <MapPin className="w-3.5 h-3.5 text-[#18572c] shrink-0 mt-0.5" />
+                <span className="leading-relaxed">{contact.address || 'Ramona Village, San Isidro, Talisay City, Cebu'}</span>
               </div>
-              <div className="flex items-center gap-3 font-mono text-[#18572c] font-bold">
-                <Phone className="w-4 h-4 text-[#D4AF37] shrink-0" />
-                <span>{(contact.phones || []).join(' / ')}</span>
+              <div className="flex items-center gap-2.5 text-xs text-zinc-800 font-semibold">
+                <Phone className="w-3.5 h-3.5 text-[#18572c] shrink-0" />
+                <span>{(contact.phones || []).join('  ·  ')}</span>
               </div>
-              <div className="flex items-center gap-3 text-zinc-700">
-                <Mail className="w-4 h-4 text-[#cf030f] shrink-0" />
-                <span>{(contact.emails || []).join(' / ')}</span>
+              <div className="flex items-start gap-2.5 text-xs text-zinc-600">
+                <Mail className="w-3.5 h-3.5 text-[#18572c] shrink-0 mt-0.5" />
+                <span className="leading-relaxed">{(contact.emails || []).join('\n')}</span>
               </div>
-              <div className="flex items-center gap-3 text-blue-600 font-semibold pt-3 border-t border-[#D4AF37]/20 mt-3">
-                <Share2 className="w-4 h-4 text-blue-500 shrink-0" />
-                <a href={contact.facebook_url || 'https://facebook.com/MisisSiomaiCebu'} target="_blank" rel="noreferrer" className="hover:text-blue-800 transition-colors">
-                  {contact.facebook || 'Misis Siomai Cebu'}
-                </a>
-              </div>
+              <a
+                href={contact.facebook_url || 'https://facebook.com/MisisSiomaiCebu'}
+                target="_blank" rel="noreferrer"
+                className="flex items-center gap-2.5 text-xs text-[#18572c] font-bold hover:text-[#cf030f] transition-colors group"
+              >
+                <Share2 className="w-3.5 h-3.5 shrink-0 group-hover:scale-110 transition-transform" />
+                <span>{contact.facebook || 'Misis Siomai Cebu'}</span>
+              </a>
             </div>
           </div>
 

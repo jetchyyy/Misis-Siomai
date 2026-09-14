@@ -208,24 +208,65 @@ export default function AdminDashboard() {
     }
   };
 
+  // ─── WebP Compression Helper ──────────────────────────────────────────────
+  // Compresses an image file to WebP format targeting ~100KB max size.
+  const compressToWebP = (file) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement('canvas');
+        const MAX_DIM = 1200;
+        let { width, height } = img;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) { height = Math.round((height * MAX_DIM) / width); width = MAX_DIM; }
+          else { width = Math.round((width * MAX_DIM) / height); height = MAX_DIM; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Iteratively reduce quality until file is under 100KB
+        const TARGET_BYTES = 100 * 1024;
+        let quality = 0.85;
+        const tryCompress = () => {
+          canvas.toBlob((blob) => {
+            if (!blob) { resolve(file); return; }
+            if (blob.size <= TARGET_BYTES || quality <= 0.1) {
+              resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }));
+            } else {
+              quality = Math.max(0.1, quality - 0.1);
+              tryCompress();
+            }
+          }, 'image/webp', quality);
+        };
+        tryCompress();
+      };
+      img.src = url;
+    });
+  };
+
   // Image Upload Handler for Products
   const handleProductImageUpload = async (idx, file) => {
     if (!file) return;
     setUploadingIdx(idx);
 
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+      // Compress to WebP ~100KB before uploading
+      const compressed = await compressToWebP(file);
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.webp`;
       const filePath = `${TENANT_ID}/products/${fileName}`;
 
-      // Upload file to Supabase storage bucket 'cms_assets'
+      // Upload compressed WebP to Supabase storage bucket 'cms_assets'
       const { data, error } = await supabase.storage
         .from('cms_assets')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, compressed, { upsert: true, contentType: 'image/webp' });
 
       if (error) {
         console.warn('Supabase storage upload fallback to base64:', error.message);
-        // Fallback to FileReader DataURL
+        // Fallback: use compressed blob as DataURL
         const reader = new FileReader();
         reader.onloadend = () => {
           const updated = [...cmsProducts];
@@ -233,7 +274,7 @@ export default function AdminDashboard() {
           setCmsProducts(updated);
           setUploadingIdx(null);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(compressed);
       } else {
         // Get Public URL
         const { data: publicData } = supabase.storage
@@ -247,7 +288,7 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       console.error('Image upload failed:', err);
-      // Fallback to FileReader DataURL
+      // Fallback: use compressed blob as DataURL
       const reader = new FileReader();
       reader.onloadend = () => {
         const updated = [...cmsProducts];
@@ -255,7 +296,7 @@ export default function AdminDashboard() {
         setCmsProducts(updated);
         setUploadingIdx(null);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(compressed);
     }
   };
 
@@ -1071,13 +1112,17 @@ export default function AdminDashboard() {
                       </div>
 
                       {/* File Upload Button */}
-                      <label className="w-full py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors border border-zinc-700">
-                        <Upload className="w-3.5 h-3.5 text-rose-400" />
-                        <span>Upload Image File</span>
+                      <label className={`w-full py-2 px-3 rounded-xl text-zinc-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors border ${uploadingIdx === idx ? 'bg-zinc-700 border-zinc-600 opacity-60 cursor-not-allowed' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700'}`}>
+                        {uploadingIdx === idx ? (
+                          <><Loader2 className="w-3.5 h-3.5 animate-spin text-rose-400" /><span>Compressing...</span></>
+                        ) : (
+                          <><Upload className="w-3.5 h-3.5 text-rose-400" /><span>Upload Image (WebP)</span></>
+                        )}
                         <input
                           type="file"
                           accept="image/*"
                           className="hidden"
+                          disabled={uploadingIdx === idx}
                           onChange={(e) => {
                             if (e.target.files && e.target.files[0]) {
                               handleProductImageUpload(idx, e.target.files[0]);
