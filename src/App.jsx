@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { CMSProvider } from './context/CMSContext';
 import LandingPage from './components/LandingPage';
 import AboutPage from './pages/AboutPage';
@@ -15,6 +15,9 @@ import { X, MessageCircleQuestion } from 'lucide-react';
 import ChatWidget from './components/ChatWidget';
 
 export default function App() {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admin');
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalInquiryType, setModalInquiryType] = useState('franchise');
   const [selectedPkg, setSelectedPkg] = useState('');
@@ -80,8 +83,8 @@ export default function App() {
           </div>
         </div>
       )}
-      {/* Interactive Chat Widget */}
-      <ChatWidget />
+      {/* Interactive Chat Widget (Hidden on Admin) */}
+      {!isAdmin && <ChatWidget />}
 
       </SplashScreen>
     </CMSProvider>

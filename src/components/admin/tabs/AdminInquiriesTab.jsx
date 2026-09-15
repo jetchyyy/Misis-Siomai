@@ -106,7 +106,7 @@ export default function AdminInquiriesTab({ inquiries, loadingInquiries, fetchIn
                 </tr>
               ) : (
                 filteredInquiries.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-100 dark:bg-zinc-800/40 transition-colors">
+                  <tr key={item.id} className="hover:bg-gray-100 dark:hover:bg-zinc-800/80 transition-colors">
                     <td className="py-4 px-5">
                       <div className="font-bold text-zinc-900 dark:text-white">{item.name}</div>
                       <div className="text-xs text-zinc-500 dark:text-zinc-400">{item.email} • {item.phone}</div>
