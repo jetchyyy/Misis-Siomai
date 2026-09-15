@@ -94,26 +94,13 @@ export default function Footer() {
                 {/* Foodpanda */}
                 {contact.foodpanda_url && (
                   <a
-                    href={contact.foodpanda_url}
+                    href={contact.foodpanda_url === 'https://www.foodpanda.ph/' ? 'https://www.foodpanda.ph/chain/ce9uv/misis-siomai' : contact.foodpanda_url}
                     target="_blank"
                     rel="noreferrer"
                     title="Order on Foodpanda"
                     className="h-10 px-3.5 rounded-xl bg-[#D70F64] text-white flex items-center gap-1.5 font-bold text-xs hover:scale-105 transition-transform shadow-md"
                   >
                     <span className="font-black tracking-tight">foodpanda</span>
-                  </a>
-                )}
-
-                {/* GrabFood */}
-                {contact.grabfood_url && (
-                  <a
-                    href={contact.grabfood_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Order on GrabFood"
-                    className="h-10 px-3.5 rounded-xl bg-[#00B14F] text-white flex items-center gap-1.5 font-bold text-xs hover:scale-105 transition-transform shadow-md"
-                  >
-                    <span className="font-black tracking-tight">GrabFood</span>
                   </a>
                 )}
 

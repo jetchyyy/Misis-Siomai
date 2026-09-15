@@ -9,8 +9,11 @@ import {
   ExternalLink,
   X,
   MessageSquare,
+  ChevronLeft,
   ChevronRight,
-  Award
+  Award,
+  Camera,
+  Maximize
 } from 'lucide-react';
 
 const defaultEvents = [
@@ -86,8 +89,17 @@ export default function Socials({ isStandalonePage = false, onOpenFranchiseModal
 
   // Selected event for modal view
   const [selectedEvent, setSelectedEvent] = useState(null);
+  // Active photo index in modal gallery
+  const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   // Active category filter
   const [activeCategory, setActiveCategory] = useState('All');
+  // Fullscreen image viewer state
+  const [fullscreenImage, setFullscreenImage] = useState(null);
+
+  const openEventModal = (evt) => {
+    setSelectedEvent(evt);
+    setActivePhotoIdx(0);
+  };
 
   // Decorative Chinese Fretwork Corner Component
   const FretworkCorner = ({ className }) => (
@@ -98,155 +110,161 @@ export default function Socials({ isStandalonePage = false, onOpenFranchiseModal
     </svg>
   );
 
-  // Events data binding from CMS Context
-  const charityEvents = cms.socials?.events && cms.socials.events.length > 0
+  // Use CMS charity events or fallback defaults
+  const events = (cms.socials && Array.isArray(cms.socials.events) && cms.socials.events.length > 0)
     ? cms.socials.events
     : defaultEvents;
 
-  const categories = ['All', ...Array.from(new Set(charityEvents.map(e => e.category || 'General')))];
+  // Categories list
+  const categories = ['All', ...new Set(events.map(e => e.category).filter(Boolean))];
 
+  // Filtered events
   const filteredEvents = activeCategory === 'All'
-    ? charityEvents
-    : charityEvents.filter(e => e.category === activeCategory);
+    ? events
+    : events.filter(e => e.category === activeCategory);
 
   return (
-    <section id="socials" className={`relative bg-[#FAF3E3] overflow-hidden ${isStandalonePage ? 'py-12 md:py-20' : 'py-20 md:py-28'} border-t border-[#D4AF37]/30`}>
-      {/* Background Subtle Texture */}
-      <div className="absolute inset-0 bg-[radial-gradient(#18572c_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.04] pointer-events-none" />
+    <section className="py-20 sm:py-28 bg-[#FAF7F2] relative overflow-hidden text-zinc-800">
+      {/* Background Decorative Accents */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#18572c]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#cf030f]/5 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Decorative Outer Border Corners */}
-      <div className="absolute top-4 left-4 hidden sm:block pointer-events-none opacity-40"><FretworkCorner className="w-10 h-10 text-[#18572c]" /></div>
-      <div className="absolute top-4 right-4 hidden sm:block pointer-events-none opacity-40"><FretworkCorner className="w-10 h-10 rotate-90 text-[#18572c]" /></div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-16">
 
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-14">
+        <div className="text-center space-y-4 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-4 text-[#cf030f] text-[10px] sm:text-xs font-black uppercase tracking-widest">
+            <span className="w-8 h-[2px] bg-[#cf030f]/60"></span>
+            Misis Siomai Cares
+            <span className="w-8 h-[2px] bg-[#cf030f]/60"></span>
+          </div>
 
-          <h2 className="font-serif font-black text-4xl sm:text-5xl lg:text-6xl text-[#18572c] tracking-tight leading-tight">
-            Misis Siomai <br className="hidden sm:inline" />
-            <span
-              className="text-[#cf030f] italic pr-2 inline-block"
-              style={{
-                textShadow: `
-                  -1px -1px 0 #fff,  
-                   1px -1px 0 #fff,
-                  -1px  1px 0 #fff,
-                   1px  1px 0 #fff,
-                   2px 4px 8px rgba(0,0,0,0.12)
-                `
-              }}
-            >
-              Charity & Community Outreach
-            </span>
+          <h2 className="font-serif font-black text-4xl sm:text-5xl lg:text-6xl text-zinc-900 tracking-tight leading-tight">
+            Our Community & <span className="text-[#18572c]">Social Initiatives</span>
           </h2>
 
-          <p className="text-base sm:text-lg text-zinc-700 leading-relaxed font-medium">
-            Beyond serving 100% pure meat dimsum, our heart lies in uplifting Cebuano families.
-            Through feeding programs, school kit drives, and disaster relief, we share our blessings with the community.
+          <p className="text-zinc-600 text-base sm:text-lg leading-relaxed">
+            Beyond serving Cebu&apos;s favorite dimsum, Misis Siomai is dedicated to nourishing local communities through feeding programs, school kit drives, and disaster relief.
           </p>
+
+          {/* Category Filter Tabs */}
+          {categories.length > 1 && (
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-4 py-2 rounded-full text-xs font-black tracking-wider transition-all cursor-pointer ${
+                    activeCategory === cat
+                      ? 'bg-[#18572c] text-white shadow-md'
+                      : 'bg-white text-zinc-600 hover:bg-zinc-100 border border-zinc-200'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Category Filtering Tabs */}
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-10">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all cursor-pointer border ${activeCategory === cat
-                ? 'bg-[#18572c] text-[#D4AF37] border-[#18572c] shadow-lg shadow-[#18572c]/20'
-                : 'bg-white text-zinc-700 border-zinc-200 hover:border-[#18572c] hover:text-[#18572c]'
-                }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {/* Events Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
+          {filteredEvents.map((evt) => {
+            const cardImages = Array.isArray(evt.images) && evt.images.length > 0 ? evt.images : [evt.image];
+            const coverImage = cardImages[0] || evt.image;
 
-        {/* Events Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
-          {filteredEvents.map((evt) => (
-            <motion.div
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4 }}
-              key={evt.id}
-              className="bg-white border-2 border-[#D4AF37]/30 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:border-[#18572c] transition-all flex flex-col justify-between group"
-            >
-              {/* Event Image Banner */}
-              <div className="relative h-64 overflow-hidden bg-zinc-900">
-                <img
-                  src={evt.image}
-                  alt={evt.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-95"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            return (
+              <motion.div
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.4 }}
+                key={evt.id || evt.title}
+                className="bg-white border-2 border-[#D4AF37]/30 rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl hover:border-[#18572c] transition-all flex flex-col justify-between group"
+              >
+                {/* Event Image Banner */}
+                <div className="relative h-64 overflow-hidden bg-zinc-900 cursor-pointer" onClick={() => openEventModal(evt)}>
+                  <img
+                    src={coverImage}
+                    alt={evt.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-95"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                {/* Category Badge */}
-                <div className="absolute top-4 left-4 bg-[#cf030f] text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-md">
-                  {evt.category}
-                </div>
-
-                {/* Location & Date Overlay */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white/90 text-xs font-medium">
-                  <div className="flex items-center gap-1.5 bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">
-                    <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    <span>{evt.location}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">
-                    <Calendar className="w-3.5 h-3.5 text-[#D4AF37]" />
-                    <span>{evt.date}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Event Content */}
-              <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between space-y-4">
-                <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 text-xs font-bold text-[#18572c] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
-                    <Award className="w-3.5 h-3.5 text-[#cf030f]" />
-                    <span>{evt.impact}</span>
+                  {/* Category Badge */}
+                  <div className="absolute top-4 left-4 bg-[#cf030f] text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-md">
+                    {evt.category}
                   </div>
 
-                  <h3 className="font-serif font-black text-2xl text-zinc-900 leading-snug group-hover:text-[#18572c] transition-colors">
-                    {evt.title}
-                  </h3>
+                  {/* Multi-photo indicator badge */}
+                  {cardImages.length > 1 && (
+                    <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm text-[#D4AF37] border border-[#D4AF37]/30 px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+                      <Camera className="w-3.5 h-3.5" />
+                      <span>{cardImages.length} Photos</span>
+                    </div>
+                  )}
 
-                  <p className="text-zinc-600 text-sm leading-relaxed line-clamp-3">
-                    {evt.description}
-                  </p>
+                  {/* Location & Date Overlay */}
+                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-[11px] font-black uppercase tracking-wider">
+                    <div className="flex items-center gap-1.5 bg-white/95 px-3 py-1.5 rounded-full backdrop-blur-sm text-[#18572c] shadow-md border border-[#18572c]/10">
+                      <MapPin className="w-3.5 h-3.5 text-[#cf030f]" />
+                      <span className="truncate max-w-[120px]">{evt.location}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white/95 px-3 py-1.5 rounded-full backdrop-blur-sm text-[#18572c] shadow-md border border-[#18572c]/10">
+                      <Calendar className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <span className="truncate max-w-[120px]">{evt.date}</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Footer Action */}
-                <div className="pt-4 border-t border-zinc-100 flex items-center justify-between">
-                  <button
-                    onClick={() => setSelectedEvent(evt)}
-                    className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#cf030f] hover:text-[#18572c] transition-colors cursor-pointer group/btn"
-                  >
-                    <span>Read Full Event Story</span>
-                    <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                  </button>
+                {/* Event Content */}
+                <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="space-y-3">
+                    <div className="inline-flex items-center gap-2 text-xs font-bold text-[#18572c] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
+                      <Award className="w-3.5 h-3.5 text-[#cf030f]" />
+                      <span>{evt.impact}</span>
+                    </div>
 
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
-                    Misis Siomai Outreach
-                  </span>
+                    <h3 className="font-serif font-black text-2xl text-zinc-900 leading-snug group-hover:text-[#18572c] transition-colors">
+                      {evt.title}
+                    </h3>
+
+                    <p className="text-zinc-600 text-sm leading-relaxed line-clamp-3">
+                      {evt.description}
+                    </p>
+                  </div>
+
+                  {/* Footer Action */}
+                  <div className="pt-4 border-t border-zinc-100 flex items-center justify-between">
+                    <button
+                      onClick={() => openEventModal(evt)}
+                      className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-[#cf030f] hover:text-[#18572c] transition-colors cursor-pointer group/btn"
+                    >
+                      <span>Read Story & Photos ({cardImages.length})</span>
+                      <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                    </button>
+
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                      Misis Siomai Outreach
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Social Media Link & Partnership Callout */}
-        <div className="bg-gradient-to-r from-[#18572c] to-[#0d3419] rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden border-2 border-[#D4AF37]/50">
+        <div 
+          className="bg-[#18572c] rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden border-2 border-[#D4AF37]/50"
+          style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23D4AF37\' fill-opacity=\'0.15\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M0 40c11.046 0 20-8.954 20-20S11.046 0 0 0h40c0 11.046-8.954 20-20 20s-20 8.954-20 20h40zM20 20c-11.046 0-20-8.954-20-20h40c0 11.046-8.954 20-20 20z\'/%3E%3C/g%3E%3C/svg%3E")' }}
+        >
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#cf030f]/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-
-            <div className="lg:col-span-2 space-y-3 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#D4AF37] text-xs font-bold uppercase tracking-wider">
-                <Heart className="w-3.5 h-3.5 text-[#cf030f]" />
+            <div className="lg:col-span-2 space-y-3">
+              <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[#D4AF37]">
                 <span>Partner with Us</span>
               </div>
               <h3 className="font-serif font-black text-3xl sm:text-4xl text-white">
@@ -287,105 +305,203 @@ export default function Socials({ isStandalonePage = false, onOpenFranchiseModal
 
       {/* Event Details Modal */}
       <AnimatePresence>
-        {selectedEvent && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto"
-            onClick={(e) => { if (e.target === e.currentTarget) setSelectedEvent(null); }}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl relative border-2 border-[#D4AF37]/50 my-8"
+        {selectedEvent && (() => {
+          const modalImages = Array.isArray(selectedEvent.images) && selectedEvent.images.length > 0
+            ? selectedEvent.images
+            : [selectedEvent.image];
+          const currentPhoto = modalImages[activePhotoIdx] || selectedEvent.image;
+
+          return (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-hidden"
+              onClick={(e) => { if (e.target === e.currentTarget) setSelectedEvent(null); }}
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setSelectedEvent(null)}
-                className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 text-white hover:bg-[#cf030f] transition-colors flex items-center justify-center cursor-pointer"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] sm:max-h-[85vh] flex flex-col lg:flex-row overflow-hidden shadow-2xl relative"
               >
-                <X className="w-5 h-5" />
-              </button>
+                {/* Close Button (Absolute to the whole modal) */}
+                <button
+                  onClick={() => setSelectedEvent(null)}
+                  className="absolute top-4 right-4 z-[60] w-8 h-8 rounded-full bg-black/10 lg:bg-zinc-100 text-white lg:text-zinc-500 hover:bg-black/30 lg:hover:bg-zinc-200 lg:hover:text-zinc-900 transition-colors flex items-center justify-center cursor-pointer"
+                  title="Close Story"
+                >
+                  <X className="w-4 h-4" />
+                </button>
 
-              {/* Modal Image */}
-              <div className="relative h-72 bg-zinc-900">
-                <img
-                  src={selectedEvent.image}
-                  alt={selectedEvent.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                {/* LEFT PANE: Carousel & Thumbnails */}
+                <div className="w-full lg:w-1/2 flex flex-col shrink-0 bg-[#0a0a0a]">
+                  {/* Modal Image Slider Banner */}
+                  <div className="relative h-56 sm:h-72 lg:h-auto lg:flex-1 shrink-0 flex items-center justify-center overflow-hidden group">
+                    <img
+                      src={currentPhoto}
+                      alt={`${selectedEvent.title} - photo ${activePhotoIdx + 1}`}
+                      className="w-full h-full object-cover transition-all duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent lg:hidden pointer-events-none" />
 
-                <div className="absolute bottom-4 left-6 right-6 text-white space-y-1">
-                  <span className="bg-[#cf030f] px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
-                    {selectedEvent.category}
-                  </span>
-                  <h3 className="font-serif font-black text-2xl sm:text-3xl leading-tight">
-                    {selectedEvent.title}
-                  </h3>
-                </div>
-              </div>
+                    {/* Maximize Fullscreen Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFullscreenImage(currentPhoto);
+                      }}
+                      className="absolute top-4 left-4 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md text-white flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100 z-50"
+                      title="View Full Screen"
+                    >
+                      <Maximize className="w-4 h-4" />
+                    </button>
 
-              {/* Modal Body */}
-              <div className="p-6 sm:p-8 space-y-6">
+                    {/* Multi-photo Navigation arrows */}
+                    {modalImages.length > 1 && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActivePhotoIdx((prev) => (prev > 0 ? prev - 1 : modalImages.length - 1));
+                          }}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/20 hover:bg-black/50 backdrop-blur-md text-white/90 flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
 
-                <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-medium text-zinc-600 border-b border-zinc-100 pb-4">
-                  <div className="flex items-center gap-1.5 text-[#18572c] font-bold">
-                    <MapPin className="w-4 h-4 text-[#cf030f]" />
-                    <span>{selectedEvent.location}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActivePhotoIdx((prev) => (prev < modalImages.length - 1 ? prev + 1 : 0));
+                          }}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/20 hover:bg-black/50 backdrop-blur-md text-white/90 flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
+
+                    <div className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-6 text-white space-y-1.5 pointer-events-none lg:hidden">
+                      <span className="bg-[#cf030f] px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
+                        {selectedEvent.category}
+                      </span>
+                      <h3 className="font-serif font-black text-xl sm:text-2xl leading-tight text-white drop-shadow">
+                        {selectedEvent.title}
+                      </h3>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-[#D4AF37]" />
-                    <span>{selectedEvent.date}</span>
+
+                  {/* Thumbnail Strip Gallery (if multiple photos exist) */}
+                  {modalImages.length > 1 && (
+                    <div className="shrink-0 bg-[#0a0a0a] px-6 py-4 flex items-center gap-3 overflow-x-auto">
+                      {modalImages.map((img, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActivePhotoIdx(i)}
+                          className={`relative w-12 h-12 rounded overflow-hidden shrink-0 transition-all cursor-pointer ${
+                            activePhotoIdx === i
+                              ? 'opacity-100 ring-1 ring-white/70 ring-offset-2 ring-offset-[#0a0a0a]'
+                              : 'opacity-30 hover:opacity-70'
+                          }`}
+                        >
+                          <img src={img} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* RIGHT PANE: Modal Body Content */}
+                <div className="w-full lg:w-1/2 flex-1 overflow-y-auto bg-white relative scrollbar-hide flex flex-col">
+                  
+                  <div className="p-6 sm:p-10 flex-1 flex flex-col space-y-8">
+                    {/* Header info (Category & Title) visible on Desktop at the top of content */}
+                    <div className="hidden lg:block space-y-4">
+                      <span className="text-[#cf030f] text-[10px] font-bold uppercase tracking-widest border border-[#cf030f]/20 px-3 py-1 rounded-full">
+                        {selectedEvent.category}
+                      </span>
+                      <h3 className="font-serif font-medium text-3xl sm:text-4xl leading-tight text-zinc-900 tracking-tight">
+                        {selectedEvent.title}
+                      </h3>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500 font-medium">
+                      <div className="uppercase tracking-widest text-zinc-800">
+                        {selectedEvent.location}
+                      </div>
+                      <div className="w-1 h-1 rounded-full bg-zinc-300" />
+                      <div className="uppercase tracking-widest">
+                        {selectedEvent.date}
+                      </div>
+                      <div className="w-1 h-1 rounded-full bg-zinc-300" />
+                      <div className="uppercase tracking-widest text-[#18572c]">
+                        {selectedEvent.impact}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <p className="text-zinc-600 text-sm sm:text-base leading-relaxed">
+                        {selectedEvent.description}
+                      </p>
+                    </div>
+
+                    {/* Highlights List */}
+                    {Array.isArray(selectedEvent.highlights) && selectedEvent.highlights.length > 0 && (
+                      <div className="space-y-3">
+                        <ul className="space-y-3">
+                          {selectedEvent.highlights.map((h, i) => (
+                            <li key={i} className="flex items-start gap-3 text-sm text-zinc-600">
+                              <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 mt-2 shrink-0" />
+                              <span className="leading-relaxed">{h}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Quote Box */}
+                    {selectedEvent.quote && (
+                      <div className="border-l-2 border-[#D4AF37] pl-5 py-1 my-4 mt-auto">
+                        <p className="text-zinc-500 text-sm sm:text-base italic leading-relaxed">
+                          &quot;{selectedEvent.quote.replace(/^"|"$/g, '')}&quot;
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1.5 font-bold text-[#cf030f]">
-                    <Award className="w-4 h-4" />
-                    <span>{selectedEvent.impact}</span>
-                  </div>
                 </div>
-
-                <div className="space-y-2">
-                  <h4 className="font-serif font-black text-lg text-zinc-900">Event Story & Overview</h4>
-                  <p className="text-zinc-600 text-sm sm:text-base leading-relaxed">
-                    {selectedEvent.description}
-                  </p>
-                </div>
-
-                {/* Highlights List */}
-                <div className="space-y-2">
-                  <h4 className="font-serif font-black text-sm text-[#18572c] uppercase tracking-wider">Key Highlights</h4>
-                  <ul className="space-y-2">
-                    {selectedEvent.highlights.map((h, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-zinc-700">
-                        <Sparkles className="w-4 h-4 text-[#cf030f] shrink-0 mt-0.5" />
-                        <span>{h}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Quote Box */}
-                {selectedEvent.quote && (
-                  <div className="p-4 rounded-2xl bg-[#FAF3E3] border border-[#D4AF37]/40 text-xs sm:text-sm italic text-[#18572c] font-medium leading-relaxed">
-                    {selectedEvent.quote}
-                  </div>
-                )}
-
-                <div className="pt-2 flex justify-end">
-                  <button
-                    onClick={() => setSelectedEvent(null)}
-                    className="px-6 py-2.5 rounded-full bg-[#18572c] text-white font-bold text-xs uppercase tracking-wider hover:bg-[#113d1e] transition-colors cursor-pointer"
-                  >
-                    Close Story
-                  </button>
-                </div>
-
-              </div>
-
-            </motion.div>
-          </div>
-        )}
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
 
+      {/* Full Screen Image Viewer */}
+      <AnimatePresence>
+        {fullscreenImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 sm:p-8 backdrop-blur-xl"
+            onClick={() => setFullscreenImage(null)}
+          >
+            <button
+              onClick={() => setFullscreenImage(null)}
+              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer z-10"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <motion.img
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              src={fullscreenImage}
+              alt="Fullscreen view"
+              className="max-w-full max-h-full object-contain shadow-2xl rounded-sm"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

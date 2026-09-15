@@ -36,6 +36,16 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const lastSubmit = localStorage.getItem('misis_siomai_last_submit');
+    if (lastSubmit) {
+      const timeSinceLastSubmit = Date.now() - parseInt(lastSubmit, 10);
+      if (timeSinceLastSubmit < 60000) { // 60 seconds rate limit
+        setErrorMsg('Please wait a minute before submitting another inquiry.');
+        return;
+      }
+    }
+
     setLoading(true);
     setErrorMsg('');
     setSuccess(false);
@@ -87,6 +97,7 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
     } catch (lsErr) {
       console.warn('Could not save inquiry to localStorage:', lsErr);
     } finally {
+      localStorage.setItem('misis_siomai_last_submit', Date.now().toString());
       setSuccess(true);
       setFormData({
         name: '',
@@ -167,8 +178,8 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Mobile Phone *</label>
-              <input required type="tel" placeholder="0917 123 4567" value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+              <input required type="tel" maxLength={11} placeholder="09171234567" value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '') }))}
                 className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium" />
             </div>
             <div className="space-y-1.5">
@@ -207,6 +218,14 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
               onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
               className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium resize-y" />
           </div>
+
+          {/* Error Message */}
+          {errorMsg && (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-red-50 text-[#cf030f] text-xs font-bold border border-red-100 animate-fadeIn">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
           {/* Submit */}
           <button type="submit" disabled={loading}
@@ -365,9 +384,10 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
                   <input
                     required
                     type="tel"
-                    placeholder="0917 123 4567"
+                    maxLength={11}
+                    placeholder="09171234567"
                     value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '') }))}
                     className="w-full px-4 py-3.5 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium"
                   />
                 </div>

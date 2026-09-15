@@ -30,8 +30,8 @@ export const INITIAL_CMS = {
     instagram_url: '',
     tiktok_url: '',
     youtube_url: '',
-    foodpanda_url: 'https://www.foodpanda.ph/',
-    grabfood_url: 'https://food.grab.com/ph/',
+    foodpanda_url: 'https://www.foodpanda.ph/chain/ce9uv/misis-siomai',
+    grabfood_url: '',
     whatsapp_number: '09322329484',
     viber_number: '09322329484',
     operating_hours: 'Monday - Saturday: 8:00 AM - 6:00 PM'

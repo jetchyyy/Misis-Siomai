@@ -486,38 +486,68 @@ export default function AdminDashboard() {
     }
   };
 
-  // Charity Event Image Upload Handler
-  const handleEventImageUpload = async (idx, file) => {
-    if (!file) return;
+  // Charity Event Image Upload Handler (Supports Multi-File Upload)
+  const handleEventImageUpload = async (idx, files) => {
+    if (!files || files.length === 0) return;
     setUploadingIdx(`event-${idx}`);
-    try {
-      const compressed = await compressToWebP(file);
-      const fileName = `event_${Date.now()}_${idx}.webp`;
-      const filePath = `${TENANT_ID}/events/${fileName}`;
+    const fileList = Array.from(files);
 
-      const { data, error } = await supabase.storage
-        .from('cms_assets')
-        .upload(filePath, compressed, { upsert: true, contentType: 'image/webp' });
+    try {
+      const newUrls = [];
+      for (const file of fileList) {
+        const compressed = await compressToWebP(file);
+        const fileName = `event_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.webp`;
+        const filePath = `${TENANT_ID}/events/${fileName}`;
+
+        const { data, error } = await supabase.storage
+          .from('cms_assets')
+          .upload(filePath, compressed, { upsert: true, contentType: 'image/webp' });
+
+        if (!error && data) {
+          const { data: publicUrlData } = supabase.storage.from('cms_assets').getPublicUrl(filePath);
+          newUrls.push(publicUrlData.publicUrl);
+        } else {
+          // Fallback to base64 DataURL if storage upload failed
+          const url = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(compressed);
+          });
+          newUrls.push(url);
+        }
+      }
 
       const updatedEvents = [...(cmsSocials.events || [])];
-      if (!error && data) {
-        const { data: publicUrlData } = supabase.storage.from('cms_assets').getPublicUrl(filePath);
-        updatedEvents[idx].image = publicUrlData.publicUrl;
-      } else {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          updatedEvents[idx].image = reader.result;
-          setCmsSocials(prev => ({ ...prev, events: updatedEvents }));
-        };
-        reader.readAsDataURL(compressed);
-        return;
-      }
+      const existingImages = Array.isArray(updatedEvents[idx].images)
+        ? updatedEvents[idx].images
+        : (updatedEvents[idx].image ? [updatedEvents[idx].image] : []);
+
+      const combinedImages = [...existingImages, ...newUrls];
+      updatedEvents[idx].images = combinedImages;
+      updatedEvents[idx].image = combinedImages[0] || '';
+
       setCmsSocials(prev => ({ ...prev, events: updatedEvents }));
+      triggerSaveNotification(`Uploaded ${newUrls.length} event photo(s) successfully!`);
     } catch (err) {
       console.error('Event image upload error:', err);
+      alert(`Upload failed: ${err.message || err}`);
     } finally {
       setUploadingIdx(null);
     }
+  };
+
+  // Remove individual photo from Event gallery
+  const handleRemoveEventImage = (eventIdx, imgIdx) => {
+    const updatedEvents = [...(cmsSocials.events || [])];
+    const existingImages = Array.isArray(updatedEvents[eventIdx].images)
+      ? updatedEvents[eventIdx].images
+      : (updatedEvents[eventIdx].image ? [updatedEvents[eventIdx].image] : []);
+
+    existingImages.splice(imgIdx, 1);
+    updatedEvents[eventIdx].images = existingImages;
+    updatedEvents[eventIdx].image = existingImages[0] || '';
+
+    setCmsSocials(prev => ({ ...prev, events: updatedEvents }));
   };
 
   const handleSaveSocials = async () => {
@@ -1989,18 +2019,55 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Event Photo & Image Control */}
                     <div className="space-y-3">
-                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Event Banner Photo</label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                          Event Photos Gallery ({Array.isArray(evt.images) && evt.images.length > 0 ? evt.images.length : (evt.image ? 1 : 0)})
+                        </label>
+                      </div>
+
+                      {/* Main Cover Preview */}
                       <div className="h-44 rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden relative group flex items-center justify-center">
                         <img 
-                          src={evt.image || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800'} 
+                          src={evt.image || (Array.isArray(evt.images) && evt.images[0]) || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800'} 
                           alt={evt.title} 
                           className="w-full h-full object-cover" 
                         />
+                        <div className="absolute top-2 left-2 bg-black/70 px-2 py-1 rounded text-[10px] font-bold text-amber-300 backdrop-blur-sm">
+                          Main Cover Photo
+                        </div>
                       </div>
+
+                      {/* Gallery Thumbnails List */}
+                      {Array.isArray(evt.images) && evt.images.length > 0 && (
+                        <div className="space-y-1">
+                          <span className="text-[11px] font-semibold text-zinc-400">Uploaded Photos:</span>
+                          <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto pr-1">
+                            {evt.images.map((imgUrl, imgIdx) => (
+                              <div key={imgIdx} className="relative aspect-square rounded-lg bg-zinc-950 border border-zinc-800 overflow-hidden group">
+                                <img src={imgUrl} alt={`Photo ${imgIdx + 1}`} className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveEventImage(idx, imgIdx)}
+                                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-600/90 text-white flex items-center justify-center hover:bg-red-700 transition-colors shadow"
+                                  title="Remove photo"
+                                >
+                                  &times;
+                                </button>
+                                {imgIdx === 0 && (
+                                  <div className="absolute bottom-0 inset-x-0 bg-amber-500/80 text-[8px] font-bold text-black text-center py-0.5">
+                                    Cover
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       <div className="space-y-1.5">
                         <input
                           type="text"
-                          placeholder="Image URL..."
+                          placeholder="Main Image URL..."
                           value={evt.image || ''}
                           onChange={(e) => {
                             const updated = [...cmsSocials.events];
@@ -2009,20 +2076,24 @@ export default function AdminDashboard() {
                           }}
                           className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-amber-300 outline-none focus:border-rose-500 font-mono"
                         />
-                        <label className={`w-full py-2 px-3 rounded-xl text-zinc-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors border ${uploadingIdx === `event-${idx}` ? 'bg-zinc-700 border-zinc-600 opacity-60 cursor-not-allowed' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700'}`}>
+                        <label className={`w-full py-2.5 px-3 rounded-xl text-zinc-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors border ${uploadingIdx === `event-${idx}` ? 'bg-zinc-700 border-zinc-600 opacity-60 cursor-not-allowed' : 'bg-rose-950/40 hover:bg-rose-900/60 border-rose-800/60 text-rose-200'}`}>
                           {uploadingIdx === `event-${idx}` ? (
-                            <><Loader2 className="w-3.5 h-3.5 animate-spin text-rose-400" /><span>Uploading...</span></>
+                            <><Loader2 className="w-3.5 h-3.5 animate-spin text-rose-400" /><span>Compressing & Uploading WebP...</span></>
                           ) : (
-                            <><Upload className="w-3.5 h-3.5 text-rose-400" /><span>Upload Event Photo</span></>
+                            <><Upload className="w-3.5 h-3.5 text-rose-400" /><span>Upload Multiple Event Photos</span></>
                           )}
                           <input
                             type="file"
+                            multiple
                             accept="image/*"
                             className="hidden"
                             disabled={uploadingIdx === `event-${idx}`}
-                            onChange={(e) => e.target.files?.[0] && handleEventImageUpload(idx, e.target.files[0])}
+                            onChange={(e) => e.target.files?.length && handleEventImageUpload(idx, e.target.files)}
                           />
                         </label>
+                        <p className="text-[10px] text-zinc-500 text-center">
+                          Select one or multiple photos. Automatically converted to WebP (~100KB).
+                        </p>
                       </div>
                     </div>
 
