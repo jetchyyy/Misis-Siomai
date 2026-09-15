@@ -32,7 +32,7 @@ export default function LandingPage({ onOpenFranchiseModal }) {
       <BranchLocator />
 
       {/* Social Page */}
-      <Socials />
+      <Socials onOpenFranchiseModal={onOpenFranchiseModal} />
 
       {/* Main Inquiry Form */}
       <InquiryForm />

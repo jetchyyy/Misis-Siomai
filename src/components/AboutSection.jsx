@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Target, Compass, Heart, Shield, Users, TrendingUp, Handshake, CheckCircle2, Star } from 'lucide-react';
 import mascotImg from '../assets/mascot.webp';
 import { motion } from 'framer-motion';
+import { useCMS } from '../context/CMSContext';
 
 export default function AboutSection() {
+  const { cms } = useCMS();
   const [activeTab, setActiveTab] = useState('profile');
 
   const coreValues = [
@@ -102,7 +104,7 @@ export default function AboutSection() {
                   {/* Shadow backdrop to make the mascot pop */}
                   <div className="absolute inset-0 bg-[#D4AF37]/20 rounded-full blur-3xl transform translate-y-10 scale-90"></div>
                   <img
-                    src={mascotImg}
+                    src={cms.about?.mascot_image || mascotImg}
                     alt="Misis Siomai Mascot"
                     className="relative z-10 w-full h-auto object-contain rounded-3xl mix-blend-multiply"
                   />

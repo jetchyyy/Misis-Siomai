@@ -11,7 +11,7 @@ const SiomaiIcon = ({ className }) => (
 );
 
 export default function SplashScreen({ children }) {
-  const { loading } = useCMS();
+  const { cms, loading } = useCMS();
   const [minTimePassed, setMinTimePassed] = useState(false);
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function SplashScreen({ children }) {
               className="relative z-10 flex flex-col items-center"
             >
               <div className="mb-10">
-                <img src="/mississiomai.png" alt="Misis Siomai Cebu Logo" className="w-48 h-48 sm:w-64 sm:h-64 object-contain drop-shadow-2xl" />
+                <img src={cms?.about?.logo_url || '/mississiomai.png'} alt="Misis Siomai Cebu Logo" className="w-48 h-48 sm:w-64 sm:h-64 object-contain drop-shadow-2xl" />
               </div>
               
               <div className="flex flex-col items-center w-full max-w-[200px] sm:max-w-[280px]">

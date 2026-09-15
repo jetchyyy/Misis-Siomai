@@ -15,7 +15,10 @@ export const INITIAL_CMS = {
       'Community Empowerment',
       'Fast Return on Investment'
     ],
-    hero_image: '/logo.svg'
+    hero_image: '/logo.svg',
+    logo_url: '/mississiomai.png',
+    navbar_logo_url: '/misissiomailogoside.png',
+    mascot_image: ''
   },
   contact: {
     general_manager: 'Lendice Marie A. Cal',
@@ -24,16 +27,93 @@ export const INITIAL_CMS = {
     emails: ['misissiomaicebu@gmail.com', 'calsiomaihouse@gmail.com'],
     facebook: 'Misis Siomai Cebu',
     facebook_url: 'https://www.facebook.com/profile.php?id=100028835748373',
+    instagram_url: '',
+    tiktok_url: '',
+    youtube_url: '',
+    foodpanda_url: 'https://www.foodpanda.ph/',
+    grabfood_url: 'https://food.grab.com/ph/',
+    whatsapp_number: '09322329484',
+    viber_number: '09322329484',
     operating_hours: 'Monday - Saturday: 8:00 AM - 6:00 PM'
   },
   home: {
     hero_title: 'Start Your Profitable Food Cart Business Today',
-    hero_subtitle: 'Authentic 100% Pork & Beef Dimsum. Zero Royalty Fees, High Profit Margins, and Fast ROI!',
+    hero_bg_image: '',
     badge: 'Ang Paboritong Siomai ng Bayan',
     cta_button: 'Explore Franchise Packages',
     stat_branches: '50+',
     stat_satisfaction: '99%',
     stat_roi_months: '3-6'
+  },
+  socials: {
+    title: 'Misis Siomai Charity & Community Outreach',
+    description: 'Beyond serving 100% pure meat dimsum, our heart lies in uplifting Cebuano families. Through feeding programs, school kit drives, and disaster relief, we share our blessings with the community.',
+    events: [
+      {
+        id: 'event-1',
+        title: 'Kusina ng Bayan: Metro Cebu Feeding Drive',
+        category: 'Feeding Program',
+        date: 'Community Initiative',
+        location: 'Talisay City & Colon, Cebu',
+        impact: 'Community Feeding Drive',
+        image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800',
+        description: 'Misis Siomai Cebu organized a community feeding initiative bringing freshly steamed 100% pure pork siomai rice meals and clean drinking water to children, street vendors, and jeepney drivers across Talisay and Downtown Cebu City.',
+        highlights: [
+          'Freshly cooked siomai rice bowls prepared by Misis Siomai team',
+          'Partnered with local barangay volunteers in Talisay',
+          'Distributed hygiene kits and bottled beverages'
+        ],
+        quote: '"Seeing the bright smiles of our youth as they enjoyed a warm meal reminded us why Misis Siomai is truly Ang Paboritong Siomai ng Bayan."'
+      },
+      {
+        id: 'event-2',
+        title: 'Project Balik-Eskwela: School Kits & Dimsum',
+        category: 'Youth & Education',
+        date: 'School Outreach',
+        location: 'San Isidro Elementary School, Cebu',
+        impact: 'Youth Education Drive',
+        image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=800',
+        description: 'Supporting education for underprivileged elementary students. Misis Siomai distributed brand-new backpacks filled with notebooks, writing materials, and delicious dimsum snack packs for young learners preparing for the school year.',
+        highlights: [
+          'Durable backpacks with complete school supplies',
+          'Nutritious dimsum merienda for students and teachers',
+          'Special fun games & activities led by the Misis Siomai crew'
+        ],
+        quote: '"Education changes lives. We are committed to nourishing both the bodies and minds of our future leaders."'
+      },
+      {
+        id: 'event-3',
+        title: 'Typhoon & Emergency Calamity Relief',
+        category: 'Disaster Relief',
+        date: 'Relief Operation',
+        location: 'Coastal Barangays in Metro Cebu',
+        impact: 'Emergency Relief Operation',
+        image: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=800',
+        description: 'When heavy monsoon floods affected coastal families in Metro Cebu, the Misis Siomai mobile team mobilized emergency aid packages containing essential food supplies, clean water, and instant siomai packs to assist displaced households.',
+        highlights: [
+          'Family relief packages containing rice & essential food goods',
+          'Direct emergency dispatch to remote coastal communities',
+          'On-the-ground volunteer relief coordination'
+        ],
+        quote: '"In times of calamity, Bayanihan is our strongest pillar. Misis Siomai will always stand by our Cebuano families."'
+      },
+      {
+        id: 'event-4',
+        title: 'Dimsum Salute to Night Shift Frontliners',
+        category: 'Community Outreach',
+        date: 'Frontliner Support',
+        location: 'Cebu City Hospitals & Emergency Units',
+        impact: 'Frontliner Appreciation',
+        image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800',
+        description: 'A midnight food delivery honoring night-shift healthcare workers, sanitation teams, and emergency responders who work tirelessly while the rest of the city sleeps.',
+        highlights: [
+          'Hot siomai platters & chili oil packs delivered to local hospitals',
+          'Handwritten appreciation cards from the Misis Siomai team',
+          'Special discount vouchers for frontliners and their families'
+        ],
+        quote: '"Our frontliners work around the clock to keep us safe. Giving them a delicious hot meal is our simple way of saying Daghang Salamat!"'
+      }
+    ]
   },
   packages: [
     {
@@ -180,7 +260,7 @@ function writeCache(data) {
 }
 
 function clearCache() {
-  try { localStorage.removeItem(CACHE_KEY); } catch {}
+  try { localStorage.removeItem(CACHE_KEY); } catch { }
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -225,6 +305,16 @@ export function CMSProvider({ children }) {
     loadCMSFromSupabase();
   }, []);
 
+  // Dynamically sync Favicon with primary logo
+  useEffect(() => {
+    if (cms.about?.logo_url) {
+      const favicon = document.querySelector("link[rel='icon']");
+      if (favicon) favicon.href = cms.about.logo_url;
+      const appleIcon = document.querySelector("link[rel='apple-touch-icon']");
+      if (appleIcon) appleIcon.href = cms.about.logo_url;
+    }
+  }, [cms.about?.logo_url]);
+
   // Update a section in CMS, sync to Supabase, and bust the cache
   const updateSection = async (sectionKey, newContent) => {
     setCms(prev => ({
@@ -250,8 +340,8 @@ export function CMSProvider({ children }) {
       setCms(prev => {
         const updated = { ...prev, [sectionKey]: newContent };
         // Extract only the remote-overridable keys for caching
-        const { about, contact, home, packages, products, branches } = updated;
-        writeCache({ about, contact, home, packages, products, branches });
+        const { about, contact, home, packages, products, branches, socials } = updated;
+        writeCache({ about, contact, home, packages, products, branches, socials });
         return updated;
       });
     } catch (err) {

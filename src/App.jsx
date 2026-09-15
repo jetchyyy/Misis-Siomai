@@ -7,6 +7,7 @@ import PackagesPage from './pages/PackagesPage';
 import ProductsPage from './pages/ProductsPage';
 import BranchesPage from './pages/BranchesPage';
 import ContactPage from './pages/ContactPage';
+import SocialsPage from './pages/SocialsPage';
 import AdminDashboard from './components/AdminDashboard';
 import InquiryForm from './components/InquiryForm';
 import SplashScreen from './components/SplashScreen';
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/packages" element={<PackagesPage onOpenFranchiseModal={handleOpenFranchiseModal} />} />
         <Route path="/products" element={<ProductsPage onOpenFranchiseModal={handleOpenFranchiseModal} />} />
         <Route path="/branches" element={<BranchesPage onOpenFranchiseModal={handleOpenFranchiseModal} />} />
+        <Route path="/socials" element={<SocialsPage onOpenFranchiseModal={handleOpenFranchiseModal} />} />
         <Route path="/contact" element={<ContactPage onOpenFranchiseModal={handleOpenFranchiseModal} />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="*" element={<LandingPage onOpenFranchiseModal={handleOpenFranchiseModal} />} />

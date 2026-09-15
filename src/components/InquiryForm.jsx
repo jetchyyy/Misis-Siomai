@@ -40,8 +40,7 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
     setErrorMsg('');
     setSuccess(false);
 
-    const newInquiry = {
-      id: `inq-${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    const dbPayload = {
       tenant_id: TENANT_ID,
       name: formData.name.trim(),
       email: formData.email.trim(),
@@ -58,27 +57,35 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
       },
     };
 
-    // 1. Always persist locally for 100% reliability in Admin Dashboard
+    let insertedRecord = null;
+    try {
+      const { data, error } = await supabase
+        .from('inquiries')
+        .insert([dbPayload])
+        .select()
+        .single();
+
+      if (!error && data) {
+        insertedRecord = data;
+      } else if (error) {
+        console.warn('Supabase insert notice:', error.message);
+      }
+    } catch (err) {
+      console.error('Submission error connecting to Supabase:', err);
+    }
+
+    const localRecord = insertedRecord || {
+      ...dbPayload,
+      id: `inq-${Date.now()}_${Math.random().toString(36).substring(2, 6)}`
+    };
+
     try {
       const existing = JSON.parse(localStorage.getItem('misis_siomai_inquiries') || '[]');
-      const updated = [newInquiry, ...existing];
+      const updated = [localRecord, ...existing.filter(i => i.id !== localRecord.id)];
       localStorage.setItem('misis_siomai_inquiries', JSON.stringify(updated));
       window.dispatchEvent(new Event('misis_siomai_inquiry_submitted'));
     } catch (lsErr) {
       console.warn('Could not save inquiry to localStorage:', lsErr);
-    }
-
-    // 2. Insert into Supabase database
-    try {
-      const { error } = await supabase
-        .from('inquiries')
-        .insert([newInquiry]);
-
-      if (error) {
-        console.warn('Supabase insert warning:', error.message);
-      }
-    } catch (err) {
-      console.error('Submission error connecting to Supabase:', err);
     } finally {
       setSuccess(true);
       setFormData({
@@ -185,9 +192,9 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
               <select value={formData.selectedPackage}
                 onChange={(e) => setFormData(prev => ({ ...prev, selectedPackage: e.target.value }))}
                 className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium">
-                <option value="Food Cart Package">Food Cart Package (₱99,000)</option>
-                <option value="Mall Kiosk Package">Mall Kiosk Package (₱175,000)</option>
-                <option value="Cloud Kitchen & Delivery Hub">Cloud Kitchen & Delivery Hub (₱250,000)</option>
+                <option value="Food Cart Package">Food Cart Package</option>
+                <option value="Mall Kiosk Package">Mall Kiosk Package</option>
+                <option value="Cloud Kitchen & Delivery Hub">Cloud Kitchen & Delivery Hub</option>
               </select>
             </div>
           )}
@@ -401,9 +408,9 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
                     onChange={(e) => setFormData(prev => ({ ...prev, selectedPackage: e.target.value }))}
                     className="w-full px-4 py-3.5 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium"
                   >
-                    <option value="Food Cart Package">Food Cart Package (₱99,000)</option>
-                    <option value="Mall Kiosk Package">Mall Kiosk Package (₱175,000)</option>
-                    <option value="Cloud Kitchen & Delivery Hub">Cloud Kitchen & Delivery Hub (₱250,000)</option>
+                    <option value="Food Cart Package">Food Cart Package</option>
+                    <option value="Mall Kiosk Package">Mall Kiosk Package</option>
+                    <option value="Cloud Kitchen & Delivery Hub">Cloud Kitchen & Delivery Hub</option>
                   </select>
                 </div>
               )}

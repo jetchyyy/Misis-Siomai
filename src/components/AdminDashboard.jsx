@@ -7,7 +7,7 @@ import {
   RefreshCw, ExternalLink, Calendar, Mail, Phone, MapPin,
   CheckCircle2, Clock, XCircle, AlertCircle, Eye, X, Utensils,
   ShieldCheck, Lock, LogOut, KeyRound, Loader2, Home, Info,
-  Package, Menu as MenuIcon, Save, Plus, Trash2, Upload, Image as ImageIcon
+  Package, Menu as MenuIcon, Save, Plus, Trash2, Upload, Image as ImageIcon, Heart
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -43,6 +43,7 @@ export default function AdminDashboard() {
   const [cmsPackages, setCmsPackages] = useState(cms.packages || []);
   const [cmsProducts, setCmsProducts] = useState(cms.products || []);
   const [cmsBranches, setCmsBranches] = useState(cms.branches || []);
+  const [cmsSocials, setCmsSocials] = useState(cms.socials || { title: '', description: '', events: [] });
 
   // Admin Branch filter & pagination states
   const [adminBranchSearch, setAdminBranchSearch] = useState('');
@@ -52,6 +53,7 @@ export default function AdminDashboard() {
 
   const [saveSuccess, setSaveSuccess] = useState('');
   const [uploadingIdx, setUploadingIdx] = useState(null);
+  const [uploadingAssetKey, setUploadingAssetKey] = useState(null);
 
   useEffect(() => {
     setCmsHome(cms.home);
@@ -60,6 +62,7 @@ export default function AdminDashboard() {
     setCmsPackages(cms.packages || []);
     setCmsProducts(cms.products || []);
     setCmsBranches(cms.branches || []);
+    setCmsSocials(cms.socials || { title: '', description: '', events: [] });
   }, [cms]);
 
   // Check Supabase Auth Session
@@ -411,6 +414,103 @@ export default function AdminDashboard() {
     triggerSaveNotification('Products Menu & Uploaded Images saved successfully!');
   };
 
+  // Asset Upload Handler (Hero BG, Logo, Mascot)
+  const handleSiteAssetUpload = async (assetType, file) => {
+    if (!file) return;
+    setUploadingAssetKey(assetType);
+    try {
+      const compressed = await compressToWebP(file);
+      const fileName = `${assetType}_${Date.now()}.webp`;
+      const filePath = `${TENANT_ID}/assets/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('cms_assets')
+        .upload(filePath, compressed, { upsert: true, contentType: 'image/webp' });
+
+      if (!error && data) {
+        const { data: publicUrlData } = supabase.storage.from('cms_assets').getPublicUrl(filePath);
+        const url = publicUrlData.publicUrl;
+        if (assetType === 'hero_bg') {
+          setCmsHome(prev => ({ ...prev, hero_bg_image: url }));
+          await updateSection('home', { ...cmsHome, hero_bg_image: url });
+        } else if (assetType === 'logo') {
+          setCmsAbout(prev => ({ ...prev, logo_url: url }));
+          await updateSection('about', { ...cmsAbout, logo_url: url });
+        } else if (assetType === 'navbar_logo') {
+          setCmsAbout(prev => ({ ...prev, navbar_logo_url: url }));
+          await updateSection('about', { ...cmsAbout, navbar_logo_url: url });
+        } else if (assetType === 'mascot') {
+          setCmsAbout(prev => ({ ...prev, mascot_image: url }));
+          await updateSection('about', { ...cmsAbout, mascot_image: url });
+        }
+        triggerSaveNotification(`Updated site asset (${assetType}) successfully!`);
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64Url = reader.result;
+          if (assetType === 'hero_bg') {
+            setCmsHome(prev => ({ ...prev, hero_bg_image: base64Url }));
+            await updateSection('home', { ...cmsHome, hero_bg_image: base64Url });
+          } else if (assetType === 'logo') {
+            setCmsAbout(prev => ({ ...prev, logo_url: base64Url }));
+            await updateSection('about', { ...cmsAbout, logo_url: base64Url });
+          } else if (assetType === 'navbar_logo') {
+            setCmsAbout(prev => ({ ...prev, navbar_logo_url: base64Url }));
+            await updateSection('about', { ...cmsAbout, navbar_logo_url: base64Url });
+          } else if (assetType === 'mascot') {
+            setCmsAbout(prev => ({ ...prev, mascot_image: base64Url }));
+            await updateSection('about', { ...cmsAbout, mascot_image: base64Url });
+          }
+          triggerSaveNotification(`Updated site asset (${assetType}) successfully!`);
+        };
+        reader.readAsDataURL(compressed);
+      }
+    } catch (err) {
+      console.error('Asset upload error:', err);
+    } finally {
+      setUploadingAssetKey(null);
+    }
+  };
+
+  // Charity Event Image Upload Handler
+  const handleEventImageUpload = async (idx, file) => {
+    if (!file) return;
+    setUploadingIdx(`event-${idx}`);
+    try {
+      const compressed = await compressToWebP(file);
+      const fileName = `event_${Date.now()}_${idx}.webp`;
+      const filePath = `${TENANT_ID}/events/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('cms_assets')
+        .upload(filePath, compressed, { upsert: true, contentType: 'image/webp' });
+
+      const updatedEvents = [...(cmsSocials.events || [])];
+      if (!error && data) {
+        const { data: publicUrlData } = supabase.storage.from('cms_assets').getPublicUrl(filePath);
+        updatedEvents[idx].image = publicUrlData.publicUrl;
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          updatedEvents[idx].image = reader.result;
+          setCmsSocials(prev => ({ ...prev, events: updatedEvents }));
+        };
+        reader.readAsDataURL(compressed);
+        return;
+      }
+      setCmsSocials(prev => ({ ...prev, events: updatedEvents }));
+    } catch (err) {
+      console.error('Event image upload error:', err);
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
+
+  const handleSaveSocials = async () => {
+    await updateSection('socials', cmsSocials);
+    triggerSaveNotification('Socials & Charity Events CMS saved successfully!');
+  };
+
   const handleSaveBranches = async () => {
     await updateSection('branches', cmsBranches);
     triggerSaveNotification('Branch Locations CMS saved successfully!');
@@ -515,12 +615,14 @@ export default function AdminDashboard() {
 
   const navTabs = [
     { id: 'inquiries', name: 'Leads & Inquiries', icon: Users, badge: inquiries.filter(i => i.status === 'New').length || 0 },
+    { id: 'assets', name: 'Site Images & Logos', icon: ImageIcon },
     { id: 'home', name: 'Home Page CMS', icon: Home },
     { id: 'about', name: 'About (Mission & Vision)', icon: Info },
     { id: 'packages', name: 'Packages CMS', icon: Package },
     { id: 'products', name: 'Products & Images CMS', icon: MenuIcon },
     { id: 'branches', name: 'Branches CMS', icon: MapPin },
-    { id: 'contact', name: 'Contact Info CMS', icon: Phone },
+    { id: 'socials', name: 'Socials & Charity Events', icon: Heart },
+    { id: 'contact', name: 'Contact & Social Links CMS', icon: Phone },
   ];
 
   const filteredInquiries = inquiries.filter(item => {
@@ -728,7 +830,242 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* TAB 2: HOME PAGE CMS */}
+        {/* TAB 2: SITE IMAGES & LOGOS CMS */}
+        {activeTab === 'assets' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="font-heading font-extrabold text-3xl text-white">Site Images & Logos CMS</h1>
+                <p className="text-xs text-zinc-400">Manage site logos, navbar branding, hero background, and mascot images with file upload or direct URL</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* 1. Primary Brand Logo (Footer, Favicon, Splash Screen) */}
+              <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-emerald-400" />
+                    <h3 className="font-heading font-bold text-base text-white">Primary Logo</h3>
+                  </div>
+                  <p className="text-xs text-zinc-400">Used for Footer, Browser Favicon, and App Splash Screen</p>
+
+                  <div className="h-44 rounded-xl bg-[#18572c] border border-zinc-800 overflow-hidden relative group flex items-center justify-center p-6">
+                    <img 
+                      src={cmsAbout.logo_url || '/mississiomai.png'} 
+                      alt="Primary Brand Logo Preview" 
+                      className="max-h-full max-w-full object-contain drop-shadow-xl" 
+                      onError={(e) => { e.target.src = '/mississiomai.png'; }}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Primary Logo URL</label>
+                    <input
+                      type="text"
+                      placeholder="/mississiomai.png or URL"
+                      value={cmsAbout.logo_url || ''}
+                      onChange={(e) => setCmsAbout(prev => ({ ...prev, logo_url: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-amber-300 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-zinc-800/80 flex items-center gap-2">
+                  <label className={`w-full py-2.5 px-3 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors ${uploadingAssetKey === 'logo' ? 'bg-zinc-700 opacity-60 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-500'}`}>
+                    {uploadingAssetKey === 'logo' ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /><span>Uploading...</span></>
+                    ) : (
+                      <><Upload className="w-4 h-4" /><span>Upload Logo</span></>
+                    )}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      disabled={uploadingAssetKey === 'logo'}
+                      onChange={(e) => e.target.files?.[0] && handleSiteAssetUpload('logo', e.target.files[0])}
+                    />
+                  </label>
+                  <button
+                    onClick={handleSaveAbout}
+                    className="py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                  >
+                    <Save className="w-4 h-4 text-emerald-400" />
+                    <span>Save</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. Navbar Logo */}
+              <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-sky-400" />
+                    <h3 className="font-heading font-bold text-base text-white">Navbar Logo</h3>
+                  </div>
+                  <p className="text-xs text-zinc-400">Horizontal/Side logo displayed exclusively in the top navigation bar</p>
+
+                  <div className="h-44 rounded-xl bg-[#18572c] border border-zinc-800 overflow-hidden relative group flex items-center justify-center p-6">
+                    <img 
+                      src={cmsAbout.navbar_logo_url || '/misissiomailogoside.png'} 
+                      alt="Navbar Logo Preview" 
+                      className="max-h-full max-w-full object-contain drop-shadow-xl" 
+                      onError={(e) => { e.target.src = '/misissiomailogoside.png'; }}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Navbar Logo URL</label>
+                    <input
+                      type="text"
+                      placeholder="/misissiomailogoside.png or URL"
+                      value={cmsAbout.navbar_logo_url || ''}
+                      onChange={(e) => setCmsAbout(prev => ({ ...prev, navbar_logo_url: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-amber-300 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-zinc-800/80 flex items-center gap-2">
+                  <label className={`w-full py-2.5 px-3 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors ${uploadingAssetKey === 'navbar_logo' ? 'bg-zinc-700 opacity-60 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-500'}`}>
+                    {uploadingAssetKey === 'navbar_logo' ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /><span>Uploading...</span></>
+                    ) : (
+                      <><Upload className="w-4 h-4" /><span>Upload Nav Logo</span></>
+                    )}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      disabled={uploadingAssetKey === 'navbar_logo'}
+                      onChange={(e) => e.target.files?.[0] && handleSiteAssetUpload('navbar_logo', e.target.files[0])}
+                    />
+                  </label>
+                  <button
+                    onClick={handleSaveAbout}
+                    className="py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                  >
+                    <Save className="w-4 h-4 text-emerald-400" />
+                    <span>Save</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. Hero Background Image */}
+              <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-rose-400" />
+                    <h3 className="font-heading font-bold text-base text-white">Hero Background</h3>
+                  </div>
+                  <p className="text-xs text-zinc-400">Appears behind the main title on the home page hero section</p>
+
+                  <div className="h-44 rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden relative group flex items-center justify-center">
+                    <img 
+                      src={cmsHome.hero_bg_image || '/siomai.jpg'} 
+                      alt="Hero Background Preview" 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => { e.target.src = '/siomai.jpg'; }}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Hero BG Image URL</label>
+                    <input
+                      type="text"
+                      placeholder="https://images.unsplash.com/..."
+                      value={cmsHome.hero_bg_image || ''}
+                      onChange={(e) => setCmsHome(prev => ({ ...prev, hero_bg_image: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-amber-300 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-zinc-800/80 flex items-center gap-2">
+                  <label className={`w-full py-2.5 px-3 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors ${uploadingAssetKey === 'hero_bg' ? 'bg-zinc-700 opacity-60 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-500'}`}>
+                    {uploadingAssetKey === 'hero_bg' ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /><span>Uploading...</span></>
+                    ) : (
+                      <><Upload className="w-4 h-4" /><span>Upload Hero BG</span></>
+                    )}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      disabled={uploadingAssetKey === 'hero_bg'}
+                      onChange={(e) => e.target.files?.[0] && handleSiteAssetUpload('hero_bg', e.target.files[0])}
+                    />
+                  </label>
+                  <button
+                    onClick={handleSaveHome}
+                    className="py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                  >
+                    <Save className="w-4 h-4 text-emerald-400" />
+                    <span>Save</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 4. Mascot Image */}
+              <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-amber-400" />
+                    <h3 className="font-heading font-bold text-base text-white">Misis Siomai Mascot</h3>
+                  </div>
+                  <p className="text-xs text-zinc-400">Character mascot displayed in the About section</p>
+
+                  <div className="h-44 rounded-xl bg-[#FAF3E3] border border-zinc-800 overflow-hidden relative group flex items-center justify-center p-4">
+                    <img 
+                      src={cmsAbout.mascot_image || '/mascot.webp'} 
+                      alt="Mascot Preview" 
+                      className="max-h-full max-w-full object-contain" 
+                      onError={(e) => { e.target.src = '/mascot.webp'; }}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Mascot Image URL</label>
+                    <input
+                      type="text"
+                      placeholder="/mascot.webp or URL"
+                      value={cmsAbout.mascot_image || ''}
+                      onChange={(e) => setCmsAbout(prev => ({ ...prev, mascot_image: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-amber-300 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-zinc-800/80 flex items-center gap-2">
+                  <label className={`w-full py-2.5 px-3 rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors ${uploadingAssetKey === 'mascot' ? 'bg-zinc-700 opacity-60 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-500'}`}>
+                    {uploadingAssetKey === 'mascot' ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /><span>Uploading...</span></>
+                    ) : (
+                      <><Upload className="w-4 h-4" /><span>Upload Mascot</span></>
+                    )}
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      disabled={uploadingAssetKey === 'mascot'}
+                      onChange={(e) => e.target.files?.[0] && handleSiteAssetUpload('mascot', e.target.files[0])}
+                    />
+                  </label>
+                  <button
+                    onClick={handleSaveAbout}
+                    className="py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                  >
+                    <Save className="w-4 h-4 text-emerald-400" />
+                    <span>Save</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: HOME PAGE CMS */}
         {activeTab === 'home' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -1547,77 +1884,439 @@ export default function AdminDashboard() {
           );
         })()}
 
-        {/* TAB 7: CONTACT INFO CMS */}
+        {/* TAB 7: SOCIALS & CHARITY EVENTS CMS */}
+        {activeTab === 'socials' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="font-heading font-extrabold text-3xl text-white">Socials & Charity Events CMS</h1>
+                <p className="text-xs text-zinc-400">Manage community outreach events, charity drives, photos, and stories</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    const newEvent = {
+                      id: `event-${Date.now()}`,
+                      title: 'New Community Outreach Drive',
+                      category: 'Community Outreach',
+                      date: 'Upcoming Initiative',
+                      location: 'Cebu City',
+                      impact: 'Community Support',
+                      image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800',
+                      description: 'Description of the charity drive or community outreach event...',
+                      highlights: ['Fresh food distribution', 'Volunteer effort'],
+                      quote: '"Giving back to our community with pure heart."'
+                    };
+                    setCmsSocials(prev => ({ ...prev, events: [newEvent, ...(prev.events || [])] }));
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer border border-zinc-700"
+                >
+                  <Plus className="w-4 h-4 text-rose-400" />
+                  <span>Add Charity Event</span>
+                </button>
+                <button
+                  onClick={handleSaveSocials}
+                  className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-rose-900/40 cursor-pointer"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Save Socials CMS</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Section Header Editor */}
+            <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-4">
+              <h3 className="font-heading font-bold text-lg text-white">Socials Section Overview Text</h3>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Section Headline Title</label>
+                  <input
+                    type="text"
+                    value={cmsSocials.title || ''}
+                    onChange={(e) => setCmsSocials(prev => ({ ...prev, title: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500 font-medium"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Section Subtitle / Narrative</label>
+                  <textarea
+                    rows={2}
+                    value={cmsSocials.description || ''}
+                    onChange={(e) => setCmsSocials(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-zinc-200 outline-none focus:border-rose-500 font-medium"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Events List */}
+            <div className="space-y-6">
+              <h3 className="font-heading font-bold text-xl text-white">Community & Charity Event Stories ({(cmsSocials.events || []).length})</h3>
+              
+              {(cmsSocials.events || []).map((evt, idx) => (
+                <div key={evt.id || idx} className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-5 relative">
+                  
+                  <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+                    <span className="text-xs font-black uppercase tracking-wider text-rose-400">
+                      Event #{idx + 1} · {evt.category || 'Outreach'}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const updated = cmsSocials.events.filter((_, i) => i !== idx);
+                        setCmsSocials(prev => ({ ...prev, events: updated }));
+                      }}
+                      className="p-1.5 rounded-lg bg-red-950/60 hover:bg-red-900 text-red-400 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-red-800/40"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete Event</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Event Photo & Image Control */}
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Event Banner Photo</label>
+                      <div className="h-44 rounded-xl bg-zinc-950 border border-zinc-800 overflow-hidden relative group flex items-center justify-center">
+                        <img 
+                          src={evt.image || 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&q=80&w=800'} 
+                          alt={evt.title} 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          placeholder="Image URL..."
+                          value={evt.image || ''}
+                          onChange={(e) => {
+                            const updated = [...cmsSocials.events];
+                            updated[idx].image = e.target.value;
+                            setCmsSocials(prev => ({ ...prev, events: updated }));
+                          }}
+                          className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-amber-300 outline-none focus:border-rose-500 font-mono"
+                        />
+                        <label className={`w-full py-2 px-3 rounded-xl text-zinc-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors border ${uploadingIdx === `event-${idx}` ? 'bg-zinc-700 border-zinc-600 opacity-60 cursor-not-allowed' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700'}`}>
+                          {uploadingIdx === `event-${idx}` ? (
+                            <><Loader2 className="w-3.5 h-3.5 animate-spin text-rose-400" /><span>Uploading...</span></>
+                          ) : (
+                            <><Upload className="w-3.5 h-3.5 text-rose-400" /><span>Upload Event Photo</span></>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={uploadingIdx === `event-${idx}`}
+                            onChange={(e) => e.target.files?.[0] && handleEventImageUpload(idx, e.target.files[0])}
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Event Details Form */}
+                    <div className="lg:col-span-2 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-zinc-400">Event Title</label>
+                          <input
+                            type="text"
+                            value={evt.title || ''}
+                            onChange={(e) => {
+                              const updated = [...cmsSocials.events];
+                              updated[idx].title = e.target.value;
+                              setCmsSocials(prev => ({ ...prev, events: updated }));
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 font-medium"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-zinc-400">Category Tag</label>
+                          <input
+                            type="text"
+                            value={evt.category || ''}
+                            onChange={(e) => {
+                              const updated = [...cmsSocials.events];
+                              updated[idx].category = e.target.value;
+                              setCmsSocials(prev => ({ ...prev, events: updated }));
+                            }}
+                            placeholder="e.g. Feeding Program / Youth & Education"
+                            className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-zinc-400">Location</label>
+                          <input
+                            type="text"
+                            value={evt.location || ''}
+                            onChange={(e) => {
+                              const updated = [...cmsSocials.events];
+                              updated[idx].location = e.target.value;
+                              setCmsSocials(prev => ({ ...prev, events: updated }));
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 font-medium"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-zinc-400">Date / Initiative Type</label>
+                          <input
+                            type="text"
+                            value={evt.date || ''}
+                            onChange={(e) => {
+                              const updated = [...cmsSocials.events];
+                              updated[idx].date = e.target.value;
+                              setCmsSocials(prev => ({ ...prev, events: updated }));
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500 font-medium"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-zinc-400">Impact Badge Label</label>
+                          <input
+                            type="text"
+                            value={evt.impact || ''}
+                            onChange={(e) => {
+                              const updated = [...cmsSocials.events];
+                              updated[idx].impact = e.target.value;
+                              setCmsSocials(prev => ({ ...prev, events: updated }));
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-amber-300 focus:border-rose-500 font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-zinc-400">Full Event Story Description</label>
+                        <textarea
+                          rows={3}
+                          value={evt.description || ''}
+                          onChange={(e) => {
+                            const updated = [...cmsSocials.events];
+                            updated[idx].description = e.target.value;
+                            setCmsSocials(prev => ({ ...prev, events: updated }));
+                          }}
+                          className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 focus:border-rose-500 font-medium"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-zinc-400">Key Highlights (comma separated)</label>
+                          <input
+                            type="text"
+                            value={(evt.highlights || []).join(', ')}
+                            onChange={(e) => {
+                              const updated = [...cmsSocials.events];
+                              updated[idx].highlights = e.target.value.split(',').map(s => s.trim());
+                              setCmsSocials(prev => ({ ...prev, events: updated }));
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-white focus:border-rose-500"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-bold text-zinc-400">Inspirational Quote</label>
+                          <input
+                            type="text"
+                            value={evt.quote || ''}
+                            onChange={(e) => {
+                              const updated = [...cmsSocials.events];
+                              updated[idx].quote = e.target.value;
+                              setCmsSocials(prev => ({ ...prev, events: updated }));
+                            }}
+                            className="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs text-emerald-300 italic focus:border-rose-500"
+                          />
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+              ))}
+            </div>
+
+          </div>
+        )}
+
+        {/* TAB 8: CONTACT & SOCIAL LINKS CMS */}
         {activeTab === 'contact' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="font-heading font-extrabold text-3xl text-white">Contact Directory CMS</h1>
-                <p className="text-xs text-zinc-400">Manage official General Manager contact info from business card</p>
+                <h1 className="font-heading font-extrabold text-3xl text-white">Contact & Social Links CMS</h1>
+                <p className="text-xs text-zinc-400">Manage official contact information, social media links, and online delivery links</p>
               </div>
               <button
                 onClick={handleSaveContact}
                 className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-rose-900/40 cursor-pointer"
               >
                 <Save className="w-4 h-4" />
-                <span>Save Contact CMS</span>
+                <span>Save Contact & Social Links</span>
               </button>
             </div>
 
-            <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">General Manager Name</label>
-                  <input
-                    type="text"
-                    value={cmsContact.general_manager || ''}
-                    onChange={(e) => setCmsContact(prev => ({ ...prev, general_manager: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500"
-                  />
+            <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 space-y-6">
+              
+              {/* Management Contacts */}
+              <div className="space-y-4">
+                <h3 className="font-heading font-bold text-lg text-white border-b border-zinc-800 pb-2">Business & Management Directory</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">General Manager Name</label>
+                    <input
+                      type="text"
+                      value={cmsContact.general_manager || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, general_manager: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500 font-medium"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Physical HQ Address</label>
+                    <input
+                      type="text"
+                      value={cmsContact.address || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, address: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500 font-medium"
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Facebook Page</label>
-                  <input
-                    type="text"
-                    value={cmsContact.facebook || ''}
-                    onChange={(e) => setCmsContact(prev => ({ ...prev, facebook: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Phone Numbers (comma separated)</label>
+                    <input
+                      type="text"
+                      value={(cmsContact.phones || []).join(', ')}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, phones: e.target.value.split(',').map(s => s.trim()) }))}
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-amber-300 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Email Addresses (comma separated)</label>
+                    <input
+                      type="text"
+                      value={(cmsContact.emails || []).join(', ')}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, emails: e.target.value.split(',').map(s => s.trim()) }))}
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500 font-medium"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Social Media Links */}
+              <div className="space-y-4 pt-4 border-t border-zinc-800">
+                <h3 className="font-heading font-bold text-lg text-white border-b border-zinc-800 pb-2">Social Media Channels</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Facebook Page Name</label>
+                    <input
+                      type="text"
+                      value={cmsContact.facebook || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, facebook: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500 font-medium"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Facebook URL</label>
+                    <input
+                      type="text"
+                      value={cmsContact.facebook_url || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, facebook_url: e.target.value }))}
+                      placeholder="https://www.facebook.com/..."
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-amber-300 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Instagram URL</label>
+                    <input
+                      type="text"
+                      value={cmsContact.instagram_url || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, instagram_url: e.target.value }))}
+                      placeholder="https://www.instagram.com/..."
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-amber-300 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">TikTok URL</label>
+                    <input
+                      type="text"
+                      value={cmsContact.tiktok_url || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, tiktok_url: e.target.value }))}
+                      placeholder="https://www.tiktok.com/@..."
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-amber-300 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">YouTube Channel URL</label>
+                    <input
+                      type="text"
+                      value={cmsContact.youtube_url || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, youtube_url: e.target.value }))}
+                      placeholder="https://www.youtube.com/@..."
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-amber-300 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Physical Address</label>
-                <input
-                  type="text"
-                  value={cmsContact.address || ''}
-                  onChange={(e) => setCmsContact(prev => ({ ...prev, address: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500"
-                />
+              {/* Online Delivery Links */}
+              <div className="space-y-4 pt-4 border-t border-zinc-800">
+                <h3 className="font-heading font-bold text-lg text-white border-b border-zinc-800 pb-2">Online Delivery & Messaging Platforms</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Foodpanda Store URL</label>
+                    <input
+                      type="text"
+                      value={cmsContact.foodpanda_url || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, foodpanda_url: e.target.value }))}
+                      placeholder="https://www.foodpanda.ph/..."
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-pink-400 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">GrabFood Store URL</label>
+                    <input
+                      type="text"
+                      value={cmsContact.grabfood_url || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, grabfood_url: e.target.value }))}
+                      placeholder="https://food.grab.com/ph/..."
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-emerald-400 outline-none focus:border-rose-500 font-mono"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">WhatsApp Hotline Number</label>
+                    <input
+                      type="text"
+                      value={cmsContact.whatsapp_number || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, whatsapp_number: e.target.value }))}
+                      placeholder="0932 2329484"
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Viber Hotline Number</label>
+                    <input
+                      type="text"
+                      value={cmsContact.viber_number || ''}
+                      onChange={(e) => setCmsContact(prev => ({ ...prev, viber_number: e.target.value }))}
+                      placeholder="0932 2329484"
+                      className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Phone Numbers (comma separated)</label>
-                  <input
-                    type="text"
-                    value={(cmsContact.phones || []).join(', ')}
-                    onChange={(e) => setCmsContact(prev => ({ ...prev, phones: e.target.value.split(',').map(s => s.trim()) }))}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-amber-300 outline-none focus:border-rose-500 font-mono"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-300">Email Addresses (comma separated)</label>
-                  <input
-                    type="text"
-                    value={(cmsContact.emails || []).join(', ')}
-                    onChange={(e) => setCmsContact(prev => ({ ...prev, emails: e.target.value.split(',').map(s => s.trim()) }))}
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-sm text-white outline-none focus:border-rose-500"
-                  />
-                </div>
-              </div>
             </div>
           </div>
         )}

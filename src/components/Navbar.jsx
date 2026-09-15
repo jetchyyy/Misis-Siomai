@@ -16,7 +16,7 @@ export default function Navbar({ onOpenFranchiseModal }) {
       setScrolled(window.scrollY > 20);
       
       // Simple scroll spy
-      const sections = ['hero', 'about', 'menu', 'franchise', 'branches', 'contact'];
+      const sections = ['hero', 'about', 'menu', 'franchise', 'branches', 'socials', 'contact'];
       let current = 'hero';
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -36,6 +36,7 @@ export default function Navbar({ onOpenFranchiseModal }) {
     { name: 'Products', id: 'menu' },
     { name: 'Packages', id: 'franchise' },
     { name: 'Branches', id: 'branches' },
+    { name: 'Socials', id: 'socials' },
     { name: 'Contact', id: 'contact' },
   ];
 
@@ -63,7 +64,7 @@ export default function Navbar({ onOpenFranchiseModal }) {
           
           {/* Brand Logo */}
           <a href="#hero" onClick={(e) => handleScrollTo(e, 'hero')} className="flex flex-col items-start gap-0.5 group">
-            <img src={navLogo} alt="Misis Siomai Cebu Logo" className="h-10 sm:h-12 w-auto group-hover:scale-105 transition-transform duration-300 drop-shadow-md object-contain" />
+            <img src={cms.about?.navbar_logo_url || navLogo} alt="Misis Siomai Cebu Logo" className="h-10 sm:h-12 w-auto group-hover:scale-105 transition-transform duration-300 drop-shadow-md object-contain" />
             <p className="text-[9px] font-bold text-[#d4af37] tracking-wider uppercase drop-shadow-sm ml-1">
               {cms.about?.tagline || 'Ang Paboritong Siomai ng Bayan'}
             </p>

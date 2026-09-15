@@ -45,6 +45,7 @@ export default function MenuShowcase({ onOpenInquiryModal }) {
 
   return (
     <section id="menu" className="py-20 md:py-32 bg-[#18572c] relative overflow-hidden border-y border-[#D4AF37]/20">
+      <div id="products" className="absolute -top-24"></div>
       
       {/* Subtle Background Radial Glow */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#D4AF37]/15 via-transparent to-transparent opacity-70 pointer-events-none"></div>
