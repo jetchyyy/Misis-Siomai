@@ -268,31 +268,32 @@ export function CMSProvider({ children }) {
   const [cms, setCms] = useState(INITIAL_CMS);
   const [loading, setLoading] = useState(true);
 
-  // Sync CMS data from Supabase (only called when cache is stale/missing)
+  // Sync CMS data from Supabase
   const loadCMSFromSupabase = async () => {
-    // 1. Serve from cache first (instant, zero egress)
+    // 1. Serve from cache instantly so UI doesn't block
     const cached = readCache();
     if (cached) {
       setCms(prev => ({ ...prev, ...cached }));
       setLoading(false);
-      return; // ← skip Supabase entirely
     }
 
-    // 2. Cache miss — fetch from Supabase and populate cache
+    // 2. Always fetch fresh remote data from Supabase to guarantee live server & multi-device sync
     try {
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
         .eq('tenant_id', TENANT_ID);
 
-      if (data && data.length > 0) {
+      if (!error && data && data.length > 0) {
         const remoteSettings = {};
         data.forEach(row => {
           remoteSettings[row.section_key] = row.content;
         });
 
         setCms(prev => ({ ...prev, ...remoteSettings }));
-        writeCache(remoteSettings); // save for next visit
+        writeCache(remoteSettings); // refresh cache with verified DB content
+      } else if (error) {
+        console.warn('Supabase site_settings fetch error:', error);
       }
     } catch (err) {
       console.warn('Could not sync remote CMS settings from Supabase, using local defaults:', err);
@@ -315,38 +316,32 @@ export function CMSProvider({ children }) {
     }
   }, [cms.about?.logo_url]);
 
-  // Update a section in CMS, sync to Supabase, and bust the cache
+  // Update a section in CMS, sync to Supabase, and bust local cache
   const updateSection = async (sectionKey, newContent) => {
-    setCms(prev => ({
-      ...prev,
-      [sectionKey]: newContent
-    }));
-
-    // Bust cache so the next page load re-fetches fresh data
     clearCache();
 
-    try {
-      await supabase
-        .from('site_settings')
-        .upsert({
-          tenant_id: TENANT_ID,
-          section_key: sectionKey,
-          content: newContent,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'tenant_id,section_key' });
+    // Perform database write and check for PostgREST/RLS error response
+    const { error } = await supabase
+      .from('site_settings')
+      .upsert({
+        tenant_id: TENANT_ID,
+        section_key: sectionKey,
+        content: newContent,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'tenant_id,section_key' });
 
-      // After a successful save, rebuild the cache with the updated state
-      // so the *next* visitor gets the fresh version without an extra query
-      setCms(prev => {
-        const updated = { ...prev, [sectionKey]: newContent };
-        // Extract only the remote-overridable keys for caching
-        const { about, contact, home, packages, products, branches, socials } = updated;
-        writeCache({ about, contact, home, packages, products, branches, socials });
-        return updated;
-      });
-    } catch (err) {
-      console.error(`Failed to update ${sectionKey} in Supabase:`, err);
+    if (error) {
+      console.error(`Database error saving section "${sectionKey}" to Supabase:`, error);
+      throw new Error(`Database error saving "${sectionKey}": ${error.message || error.details || JSON.stringify(error)}`);
     }
+
+    // Update state and write to cache ONLY after verified successful database write
+    setCms(prev => {
+      const updated = { ...prev, [sectionKey]: newContent };
+      const { about, contact, home, packages, products, branches, socials } = updated;
+      writeCache({ about, contact, home, packages, products, branches, socials });
+      return updated;
+    });
   };
 
   return (

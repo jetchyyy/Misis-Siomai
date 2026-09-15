@@ -390,28 +390,48 @@ export default function AdminDashboard() {
   };
 
   const handleSaveHome = async () => {
-    await updateSection('home', cmsHome);
-    triggerSaveNotification('Home Page CMS settings saved successfully!');
+    try {
+      await updateSection('home', cmsHome);
+      triggerSaveNotification('Home Page CMS settings saved to database successfully!');
+    } catch (err) {
+      alert(`Database Save Error: ${err.message || err}`);
+    }
   };
 
   const handleSaveAbout = async () => {
-    await updateSection('about', cmsAbout);
-    triggerSaveNotification('About Us (Mission & Vision) saved successfully!');
+    try {
+      await updateSection('about', cmsAbout);
+      triggerSaveNotification('About Us & Logo settings saved to database successfully!');
+    } catch (err) {
+      alert(`Database Save Error: ${err.message || err}`);
+    }
   };
 
   const handleSaveContact = async () => {
-    await updateSection('contact', cmsContact);
-    triggerSaveNotification('Contact Directory CMS settings saved successfully!');
+    try {
+      await updateSection('contact', cmsContact);
+      triggerSaveNotification('Contact Directory CMS settings saved to database successfully!');
+    } catch (err) {
+      alert(`Database Save Error: ${err.message || err}`);
+    }
   };
 
   const handleSavePackages = async () => {
-    await updateSection('packages', cmsPackages);
-    triggerSaveNotification('Franchise Packages CMS saved successfully!');
+    try {
+      await updateSection('packages', cmsPackages);
+      triggerSaveNotification('Franchise Packages CMS saved to database successfully!');
+    } catch (err) {
+      alert(`Database Save Error: ${err.message || err}`);
+    }
   };
 
   const handleSaveProducts = async () => {
-    await updateSection('products', cmsProducts);
-    triggerSaveNotification('Products Menu & Uploaded Images saved successfully!');
+    try {
+      await updateSection('products', cmsProducts);
+      triggerSaveNotification('Products Menu & Images saved to database successfully!');
+    } catch (err) {
+      alert(`Database Save Error: ${err.message || err}`);
+    }
   };
 
   // Asset Upload Handler (Hero BG, Logo, Mascot)
@@ -427,46 +447,40 @@ export default function AdminDashboard() {
         .from('cms_assets')
         .upload(filePath, compressed, { upsert: true, contentType: 'image/webp' });
 
+      let url = '';
       if (!error && data) {
         const { data: publicUrlData } = supabase.storage.from('cms_assets').getPublicUrl(filePath);
-        const url = publicUrlData.publicUrl;
-        if (assetType === 'hero_bg') {
-          setCmsHome(prev => ({ ...prev, hero_bg_image: url }));
-          await updateSection('home', { ...cmsHome, hero_bg_image: url });
-        } else if (assetType === 'logo') {
-          setCmsAbout(prev => ({ ...prev, logo_url: url }));
-          await updateSection('about', { ...cmsAbout, logo_url: url });
-        } else if (assetType === 'navbar_logo') {
-          setCmsAbout(prev => ({ ...prev, navbar_logo_url: url }));
-          await updateSection('about', { ...cmsAbout, navbar_logo_url: url });
-        } else if (assetType === 'mascot') {
-          setCmsAbout(prev => ({ ...prev, mascot_image: url }));
-          await updateSection('about', { ...cmsAbout, mascot_image: url });
-        }
-        triggerSaveNotification(`Updated site asset (${assetType}) successfully!`);
+        url = publicUrlData.publicUrl;
       } else {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64Url = reader.result;
-          if (assetType === 'hero_bg') {
-            setCmsHome(prev => ({ ...prev, hero_bg_image: base64Url }));
-            await updateSection('home', { ...cmsHome, hero_bg_image: base64Url });
-          } else if (assetType === 'logo') {
-            setCmsAbout(prev => ({ ...prev, logo_url: base64Url }));
-            await updateSection('about', { ...cmsAbout, logo_url: base64Url });
-          } else if (assetType === 'navbar_logo') {
-            setCmsAbout(prev => ({ ...prev, navbar_logo_url: base64Url }));
-            await updateSection('about', { ...cmsAbout, navbar_logo_url: base64Url });
-          } else if (assetType === 'mascot') {
-            setCmsAbout(prev => ({ ...prev, mascot_image: base64Url }));
-            await updateSection('about', { ...cmsAbout, mascot_image: base64Url });
-          }
-          triggerSaveNotification(`Updated site asset (${assetType}) successfully!`);
-        };
-        reader.readAsDataURL(compressed);
+        // Fallback to base64 DataURL if storage bucket upload failed
+        url = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(compressed);
+        });
       }
+
+      if (assetType === 'hero_bg') {
+        let updated;
+        setCmsHome(prev => { updated = { ...prev, hero_bg_image: url }; return updated; });
+        await updateSection('home', updated);
+      } else if (assetType === 'logo') {
+        let updated;
+        setCmsAbout(prev => { updated = { ...prev, logo_url: url }; return updated; });
+        await updateSection('about', updated);
+      } else if (assetType === 'navbar_logo') {
+        let updated;
+        setCmsAbout(prev => { updated = { ...prev, navbar_logo_url: url }; return updated; });
+        await updateSection('about', updated);
+      } else if (assetType === 'mascot') {
+        let updated;
+        setCmsAbout(prev => { updated = { ...prev, mascot_image: url }; return updated; });
+        await updateSection('about', updated);
+      }
+      triggerSaveNotification(`Updated site asset (${assetType}) in database successfully!`);
     } catch (err) {
       console.error('Asset upload error:', err);
+      alert(`Database Asset Save Error: ${err.message || err}`);
     } finally {
       setUploadingAssetKey(null);
     }
