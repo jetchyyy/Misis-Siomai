@@ -461,20 +461,20 @@ export default function AdminDashboard() {
       }
 
       if (assetType === 'hero_bg') {
-        let updated;
-        setCmsHome(prev => { updated = { ...prev, hero_bg_image: url }; return updated; });
+        const updated = { ...cmsHome, hero_bg_image: url };
+        setCmsHome(updated);
         await updateSection('home', updated);
       } else if (assetType === 'logo') {
-        let updated;
-        setCmsAbout(prev => { updated = { ...prev, logo_url: url }; return updated; });
+        const updated = { ...cmsAbout, logo_url: url };
+        setCmsAbout(updated);
         await updateSection('about', updated);
       } else if (assetType === 'navbar_logo') {
-        let updated;
-        setCmsAbout(prev => { updated = { ...prev, navbar_logo_url: url }; return updated; });
+        const updated = { ...cmsAbout, navbar_logo_url: url };
+        setCmsAbout(updated);
         await updateSection('about', updated);
       } else if (assetType === 'mascot') {
-        let updated;
-        setCmsAbout(prev => { updated = { ...prev, mascot_image: url }; return updated; });
+        const updated = { ...cmsAbout, mascot_image: url };
+        setCmsAbout(updated);
         await updateSection('about', updated);
       }
       triggerSaveNotification(`Updated site asset (${assetType}) in database successfully!`);

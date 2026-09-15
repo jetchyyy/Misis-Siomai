@@ -268,12 +268,24 @@ export function CMSProvider({ children }) {
   const [cms, setCms] = useState(INITIAL_CMS);
   const [loading, setLoading] = useState(true);
 
+  const mergeCMS = (remoteData) => {
+    if (!remoteData) return INITIAL_CMS;
+    return {
+      ...INITIAL_CMS,
+      ...remoteData,
+      about: { ...INITIAL_CMS.about, ...(remoteData.about || {}) },
+      home: { ...INITIAL_CMS.home, ...(remoteData.home || {}) },
+      contact: { ...INITIAL_CMS.contact, ...(remoteData.contact || {}) },
+      socials: { ...INITIAL_CMS.socials, ...(remoteData.socials || {}) }
+    };
+  };
+
   // Sync CMS data from Supabase
   const loadCMSFromSupabase = async () => {
     // 1. Serve from cache instantly so UI doesn't block
     const cached = readCache();
     if (cached) {
-      setCms(prev => ({ ...prev, ...cached }));
+      setCms(mergeCMS(cached));
       setLoading(false);
     }
 
@@ -290,8 +302,9 @@ export function CMSProvider({ children }) {
           remoteSettings[row.section_key] = row.content;
         });
 
-        setCms(prev => ({ ...prev, ...remoteSettings }));
-        writeCache(remoteSettings); // refresh cache with verified DB content
+        const merged = mergeCMS(remoteSettings);
+        setCms(merged);
+        writeCache(remoteSettings);
       } else if (error) {
         console.warn('Supabase site_settings fetch error:', error);
       }
@@ -308,13 +321,13 @@ export function CMSProvider({ children }) {
 
   // Dynamically sync Favicon with primary logo
   useEffect(() => {
-    if (cms.about?.logo_url) {
+    if (cms?.about?.logo_url) {
       const favicon = document.querySelector("link[rel='icon']");
       if (favicon) favicon.href = cms.about.logo_url;
       const appleIcon = document.querySelector("link[rel='apple-touch-icon']");
       if (appleIcon) appleIcon.href = cms.about.logo_url;
     }
-  }, [cms.about?.logo_url]);
+  }, [cms?.about?.logo_url]);
 
   // Update a section in CMS, sync to Supabase, and bust local cache
   const updateSection = async (sectionKey, newContent) => {
@@ -337,7 +350,7 @@ export function CMSProvider({ children }) {
 
     // Update state and write to cache ONLY after verified successful database write
     setCms(prev => {
-      const updated = { ...prev, [sectionKey]: newContent };
+      const updated = mergeCMS({ ...prev, [sectionKey]: newContent });
       const { about, contact, home, packages, products, branches, socials } = updated;
       writeCache({ about, contact, home, packages, products, branches, socials });
       return updated;

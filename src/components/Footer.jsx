@@ -5,7 +5,8 @@ import { Phone, Mail, MapPin, Share2, Heart } from 'lucide-react';
 
 export default function Footer() {
   const { cms } = useCMS();
-  const { about, contact } = cms;
+  const about = cms?.about || {};
+  const contact = cms?.contact || {};
 
   return (
     <footer className="bg-[#FAF3E3] text-zinc-800 pt-16 pb-12 border-t-[4px] border-[#cf030f] relative overflow-hidden">
@@ -21,7 +22,7 @@ export default function Footer() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="bg-[#18572c] p-3 rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
-                <img src={about.logo_url || '/mississiomai.png'} alt="Misis Siomai Logo" className="w-16 h-16 object-contain" />
+                <img src={about?.logo_url || '/mississiomai.png'} alt="Misis Siomai Logo" className="w-16 h-16 object-contain" />
               </div>
               <div>
                 <h3 className="font-serif font-black text-2xl text-[#18572c] tracking-tight drop-shadow-sm">
