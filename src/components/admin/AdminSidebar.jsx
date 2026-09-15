@@ -52,7 +52,7 @@ export default function AdminSidebar({
                 }}
                 className={`w-full px-4 py-3 rounded-xl font-bold text-xs transition-all flex items-center justify-between cursor-pointer ${isActive
                     ? 'bg-gradient-to-r from-rose-600 to-rose-700 text-zinc-900 dark:text-white shadow-lg shadow-rose-900/40'
-                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-zinc-100 hover:bg-gray-100 dark:hover:bg-zinc-800/80'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-gray-100 dark:hover:bg-zinc-800/80'
                   }`}
               >
                 <div className="flex items-center gap-3">
