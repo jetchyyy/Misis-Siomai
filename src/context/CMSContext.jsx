@@ -23,7 +23,7 @@ export const INITIAL_CMS = {
     phones: ['0932 2329484', '0995 5662713'],
     emails: ['misissiomaicebu@gmail.com', 'calsiomaihouse@gmail.com'],
     facebook: 'Misis Siomai Cebu',
-    facebook_url: 'https://facebook.com/MisisSiomaiCebu',
+    facebook_url: 'https://www.facebook.com/profile.php?id=100028835748373',
     operating_hours: 'Monday - Saturday: 8:00 AM - 6:00 PM'
   },
   home: {

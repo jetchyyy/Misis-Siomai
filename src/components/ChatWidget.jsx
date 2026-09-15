@@ -62,7 +62,7 @@ export default function ChatWidget() {
       case 'facebook':
         return {
           text: `Follow and message us on Facebook!\n\n${contact.facebook || 'Misis Siomai Cebu'}\n\nTap the button below to visit our page.`,
-          link: { label: 'Visit Facebook Page', url: contact.facebook_url || 'https://facebook.com/MisisSiomaiCebu' },
+          link: { label: 'Visit Facebook Page', url: contact.facebook_url || 'https://www.facebook.com/profile.php?id=100028835748373' },
           options: null,
         };
       case 'franchise':

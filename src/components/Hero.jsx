@@ -34,7 +34,7 @@ export default function Hero({ onOpenFranchiseModal }) {
 
   return (
     <section id="hero" className="relative pt-20 pb-0 bg-[#2d1b11]">
-      <div className="relative w-full max-w-[1600px] mx-auto min-h-[600px] md:min-h-[85vh] flex items-center justify-start p-6 md:p-16 overflow-hidden">
+      <div className="relative w-full max-w-[1600px] mx-auto min-h-[100dvh] md:min-h-[75vh] flex items-center justify-start p-6 md:p-12 overflow-hidden">
         
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
@@ -71,10 +71,10 @@ export default function Hero({ onOpenFranchiseModal }) {
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-20 w-full max-w-3xl space-y-6 sm:space-y-8 mt-12 md:mt-0">
+        <div className="relative z-20 w-full max-w-3xl space-y-4 sm:space-y-6 mt-6 md:mt-0 md:pl-8 lg:pl-12 flex flex-col items-center md:items-start text-center md:text-left mx-auto md:mx-0">
           
           <h1 
-            className="font-serif font-black text-6xl sm:text-7xl md:text-8xl italic tracking-tight leading-[1.1]"
+            className="font-serif font-black text-5xl sm:text-6xl md:text-7xl lg:text-[4.5rem] italic tracking-tight leading-[1.1]"
             style={{ 
               color: '#cf030f', 
               textShadow: `
@@ -93,78 +93,33 @@ export default function Hero({ onOpenFranchiseModal }) {
             {home.hero_title || 'Start Your Profitable Food Cart Business Today'}
           </h1>
           
-          <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-bold leading-snug drop-shadow-lg">
+          <h2 className="text-white text-xl sm:text-2xl md:text-3xl font-bold leading-snug drop-shadow-lg">
             {about.tagline || 'Ang Paboritong Siomai ng Bayan'}
           </h2>
 
-          <p className="text-zinc-200 text-lg sm:text-xl font-medium max-w-2xl drop-shadow-md leading-relaxed">
-            {home.hero_subtitle || 'Premium Cebuano Siomai, Inspired by Heritage. Authentic 100% pork and beef dimsum.'}
+          <p className="text-zinc-200 text-base sm:text-lg font-medium max-w-2xl drop-shadow-md leading-relaxed">
+            {home.hero_subtitle || 'Premium Cebuano Siomai, Inspired by Heritage. Pork and beef dimsum.'}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2 w-full sm:w-auto px-4 sm:px-0">
             <button 
               onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-10 py-4 rounded-full bg-[#cf030f] hover:bg-[#a0020b] text-white font-bold text-lg transition-all shadow-xl hover:shadow-[#cf030f]/30 hover:-translate-y-1"
+              className="px-6 py-2.5 rounded-full bg-[#cf030f] hover:bg-[#a0020b] text-white font-bold text-sm sm:text-base transition-all shadow-xl hover:shadow-[#cf030f]/30 hover:-translate-y-1"
             >
-              Explore Our Menu
+              Explore Menu
             </button>
             <button 
               onClick={onOpenFranchiseModal}
-              className="px-10 py-4 rounded-full bg-[#18572c] hover:bg-[#113d1e] text-white font-bold text-lg border-2 border-white transition-all shadow-xl hover:-translate-y-1"
+              className="px-6 py-2.5 rounded-full bg-[#18572c] hover:bg-[#113d1e] text-white font-bold text-sm sm:text-base border-2 border-white transition-all shadow-xl hover:-translate-y-1"
             >
               {home.cta_button || 'Inquire about Franchising'}
             </button>
           </div>
 
-        </div>
-      </div>
-      
-      {/* Stats Counter Bar - Red to match aesthetic */}
-      <div className="bg-[#cf030f] border-t-2 border-b-2 border-[#D4AF37]/40 py-10 relative z-20 shadow-2xl overflow-hidden">
-        
-        {/* SVG Dragon Scales Line Pattern */}
-        <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none mix-blend-screen" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="dragonScales" width="40" height="20" patternUnits="userSpaceOnUse" patternTransform="scale(2)">
-              {/* Row 1 */}
-              <path d="M0,0 a20,20 0 0,0 40,0" fill="none" stroke="#D4AF37" strokeWidth="1" />
-              {/* Row 2 (offset for overlap) */}
-              <path d="M-20,10 a20,20 0 0,0 40,0" fill="none" stroke="#D4AF37" strokeWidth="1" />
-              <path d="M20,10 a20,20 0 0,0 40,0" fill="none" stroke="#D4AF37" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#dragonScales)" />
-        </svg>
-        
-        {/* Golden glow edges */}
-        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#cf030f] to-transparent pointer-events-none"></div>
-        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#cf030f] to-transparent pointer-events-none"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#D4AF37]" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
-                <AnimatedCounter text={home.stat_branches || '50+'} />
-              </div>
-              <div className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Active Stores</div>
-            </div>
-            <div className="space-y-2">
-              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-white" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
-                <AnimatedCounter text="10k+" />
-              </div>
-              <div className="text-xs sm:text-sm font-bold text-[#D4AF37] uppercase tracking-wider">Daily Pieces Served</div>
-            </div>
-            <div className="space-y-2">
-              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#D4AF37]" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
-                <AnimatedCounter text="₱0" />
-              </div>
-              <div className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Royalty Fees</div>
-            </div>
-            <div className="space-y-2">
-              <div className="font-heading font-extrabold text-4xl sm:text-5xl text-[#D4AF37]" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>
-                <AnimatedCounter text={home.stat_satisfaction || '99%'} />
-              </div>
-              <div className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Meat Guarantee</div>
+          <div className="flex items-center justify-center md:justify-start gap-3 mt-6 text-white/90 font-medium animate-fadeIn">
+            <span className="text-sm">We are available on</span>
+            <div className="bg-[#D70F64] px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 hover:scale-105 transition-transform cursor-pointer" title="Order via Foodpanda">
+              <span className="font-bold text-white text-sm tracking-wide">foodpanda</span>
             </div>
           </div>
         </div>

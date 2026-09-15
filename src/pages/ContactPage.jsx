@@ -88,7 +88,7 @@ export default function ContactPage({ onOpenFranchiseModal }) {
                     <Share2 className="w-4 h-4" /> Facebook Page
                   </div>
                   <a 
-                    href={contact.facebook_url || 'https://facebook.com/MisisSiomaiCebu'} 
+                    href={contact.facebook_url || 'https://www.facebook.com/profile.php?id=100028835748373'} 
                     target="_blank" 
                     rel="noreferrer"
                     className="block text-sm font-semibold text-blue-600 hover:underline"

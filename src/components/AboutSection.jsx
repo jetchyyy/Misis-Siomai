@@ -116,40 +116,44 @@ export default function AboutSection() {
             <div className="grid md:grid-cols-2 gap-10 animate-fade-in">
 
               {/* Vision Box */}
-              <div className="bg-white/60 p-8 rounded-3xl shadow-sm border border-[#D4AF37]/30 flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-[#18572c]/10 text-[#18572c] rounded-2xl flex items-center justify-center mb-6">
-                  <Compass className="w-8 h-8" />
+              <div className="bg-white/60 p-6 rounded-2xl shadow-sm border border-[#D4AF37]/30 flex flex-col items-center text-center">
+                <div className="w-12 h-12 bg-[#18572c]/10 text-[#18572c] rounded-xl flex items-center justify-center mb-4">
+                  <Compass className="w-6 h-6" />
                 </div>
-                <h3 className="font-serif font-black text-3xl text-zinc-900 mb-4">Our Vision</h3>
-                <p className="text-zinc-700 text-lg leading-relaxed">
+                <h3 className="font-serif font-black text-2xl text-zinc-900 mb-2">Our Vision</h3>
+                <p className="text-zinc-700 text-sm leading-relaxed">
                   To become a trusted and recognized local food brand in Cebu and eventually expand to more communities across the Philippines.
                 </p>
               </div>
 
               {/* Mission Box */}
-              <div className="bg-[#18572c] p-8 rounded-3xl shadow-xl text-white flex flex-col">
-                <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
-                  <Target className="w-8 h-8 text-[#d4af37]" />
+              <div className="bg-[#18572c] p-6 rounded-2xl shadow-xl text-white flex flex-col">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center shrink-0">
+                    <Target className="w-6 h-6 text-[#d4af37]" />
+                  </div>
+                  <h3 className="font-serif font-black text-2xl text-[#d4af37]">Our Mission</h3>
                 </div>
-                <h3 className="font-serif font-black text-3xl text-[#d4af37] mb-4">Our Mission</h3>
-                <p className="text-zinc-100 text-lg leading-relaxed mb-6">
+                <p className="text-zinc-100 text-sm leading-relaxed mb-5">
                   To provide delicious and affordable food while building sustainable business opportunities for aspiring entrepreneurs and families.
                 </p>
-                <div className="space-y-3 mt-auto">
-                  <h4 className="text-sm font-bold text-white/70 uppercase tracking-widest mb-3">We aim to:</h4>
-                  {[
-                    'Maintain consistent product quality',
-                    'Provide excellent customer service',
-                    'Offer affordable and accessible food products',
-                    'Develop profitable business opportunities',
-                    'Support aspiring entrepreneurs through franchising',
-                    'Continuously innovate our products and services'
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-[#d4af37] shrink-0 mt-0.5" />
-                      <span className="text-sm font-medium">{item}</span>
-                    </div>
-                  ))}
+                <div className="space-y-2 mt-auto border-t border-white/10 pt-4">
+                  <h4 className="text-[10px] font-bold text-[#d4af37] uppercase tracking-widest mb-2">We aim to:</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+                    {[
+                      'Maintain consistent product quality',
+                      'Provide excellent customer service',
+                      'Offer affordable and accessible food products',
+                      'Develop profitable business opportunities',
+                      'Support aspiring entrepreneurs through franchising',
+                      'Continuously innovate our products and services'
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-start gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#d4af37] shrink-0 mt-0.5" />
+                        <span className="text-[11px] font-medium text-white/90">{item}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 

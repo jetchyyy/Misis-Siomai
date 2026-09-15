@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronRight, Store } from 'lucide-react';
 import { useCMS } from '../context/CMSContext';
+import navLogo from '../assets/misissiomailogoside.png';
 
 export default function Navbar({ onOpenFranchiseModal }) {
   const [scrolled, setScrolled] = useState(false);
@@ -61,18 +62,11 @@ export default function Navbar({ onOpenFranchiseModal }) {
         <div className="flex items-center justify-between">
           
           {/* Brand Logo */}
-          <a href="#hero" onClick={(e) => handleScrollTo(e, 'hero')} className="flex items-center gap-3 group">
-            <img src="/mississiomai.png" alt="Misis Siomai Cebu Logo" className="w-12 h-12 group-hover:scale-105 transition-transform duration-300 drop-shadow-md object-contain" />
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-serif font-black text-2xl tracking-tight text-white drop-shadow-sm">
-                  {cms.about?.brand_name || 'Misis Siomai Cebu'}
-                </span>
-              </div>
-              <p className="text-[10px] font-bold text-[#d4af37] tracking-wider uppercase">
-                {cms.about?.tagline || 'Ang Paboritong Siomai ng Bayan'}
-              </p>
-            </div>
+          <a href="#hero" onClick={(e) => handleScrollTo(e, 'hero')} className="flex flex-col items-start gap-0.5 group">
+            <img src={navLogo} alt="Misis Siomai Cebu Logo" className="h-10 sm:h-12 w-auto group-hover:scale-105 transition-transform duration-300 drop-shadow-md object-contain" />
+            <p className="text-[9px] font-bold text-[#d4af37] tracking-wider uppercase drop-shadow-sm ml-1">
+              {cms.about?.tagline || 'Ang Paboritong Siomai ng Bayan'}
+            </p>
           </a>
 
           {/* Desktop Nav Links */}

@@ -23,7 +23,7 @@ export default function Footer() {
                 <img src="/mississiomai.png" alt="Misis Siomai Logo" className="w-16 h-16 object-contain" />
               </div>
               <div>
-                <h3 className="font-serif font-black text-3xl text-[#18572c] tracking-wide drop-shadow-sm">
+                <h3 className="font-serif font-black text-2xl text-[#18572c] tracking-tight drop-shadow-sm">
                   {about.brand_name || 'Misis Siomai Cebu'}
                 </h3>
                 <p className="text-xs text-[#cf030f] font-black tracking-widest uppercase mt-1">
@@ -50,7 +50,7 @@ export default function Footer() {
                 <span className="leading-relaxed">{(contact.emails || []).join('\n')}</span>
               </div>
               <a
-                href={contact.facebook_url || 'https://facebook.com/MisisSiomaiCebu'}
+                href={contact.facebook_url || 'https://www.facebook.com/profile.php?id=100028835748373'}
                 target="_blank" rel="noreferrer"
                 className="flex items-center gap-2.5 text-xs text-[#18572c] font-bold hover:text-[#cf030f] transition-colors group"
               >

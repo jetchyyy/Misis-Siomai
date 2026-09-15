@@ -5,6 +5,7 @@ import AboutSection from './AboutSection';
 import MenuShowcase from './MenuShowcase';
 import FranchisePackages from './FranchisePackages';
 import BranchLocator from './BranchLocator';
+import Socials from './Socials';
 import InquiryForm from './InquiryForm';
 import Footer from './Footer';
 
@@ -29,6 +30,9 @@ export default function LandingPage({ onOpenFranchiseModal }) {
 
       {/* Branch Locator & Story */}
       <BranchLocator />
+
+      {/* Social Page */}
+      <Socials />
 
       {/* Main Inquiry Form */}
       <InquiryForm />

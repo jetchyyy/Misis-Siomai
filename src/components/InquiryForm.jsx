@@ -9,6 +9,7 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
     name: '',
     email: '',
     phone: '',
+    address: '',
     targetCity: '',
     selectedPackage: preselectedPackage || 'Mall Kiosk Package',
     message: '',
@@ -50,6 +51,7 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
       status: 'New',
       created_at: new Date().toISOString(),
       custom_fields: {
+        address: formData.address.trim(),
         target_city: formData.targetCity.trim(),
         selected_package: formData.selectedPackage,
         submitted_at: new Date().toISOString(),
@@ -83,6 +85,7 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
         name: '',
         email: '',
         phone: '',
+        address: '',
         targetCity: '',
         selectedPackage: 'Mall Kiosk Package',
         message: '',
@@ -116,10 +119,9 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Inquiry Type Tabs */}
-          <div className="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-white/60 border border-[#D4AF37]/30 shadow-inner">
+          <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-white/60 border border-[#D4AF37]/30 shadow-inner">
             {[
               { id: 'franchise', label: 'Franchise Inquiry', icon: Store },
-              { id: 'bulk_order', label: 'Bulk / Catering', icon: ShoppingBag },
               { id: 'general', label: 'General Inquiry', icon: HelpCircle },
             ].map((tab) => {
               const IconComp = tab.icon;
@@ -160,6 +162,12 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
               <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Mobile Phone *</label>
               <input required type="tel" placeholder="0917 123 4567" value={formData.phone}
                 onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Complete Address *</label>
+              <input required type="text" placeholder="123 Main St, Brgy. San Jose" value={formData.address}
+                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                 className="w-full px-4 py-3 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium" />
             </div>
             <div className="space-y-1.5">
@@ -290,10 +298,9 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
             <form onSubmit={handleSubmit} className="mt-8 space-y-6">
               
               {/* Inquiry Type Tabs */}
-              <div className="grid grid-cols-3 gap-2 p-1.5 rounded-2xl bg-white/60 border border-[#D4AF37]/30 shadow-inner">
+              <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-white/60 border border-[#D4AF37]/30 shadow-inner">
                 {[
                   { id: 'franchise', label: 'Franchise Inquiry', icon: Store },
-                  { id: 'bulk_order', label: 'Bulk / Catering', icon: ShoppingBag },
                   { id: 'general', label: 'General Inquiry', icon: HelpCircle },
                 ].map((tab) => {
                   const IconComp = tab.icon;
@@ -354,6 +361,19 @@ export default function InquiryForm({ initialType = 'franchise', preselectedPack
                     placeholder="0917 123 4567"
                     value={formData.phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full px-4 py-3.5 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium"
+                  />
+                </div>
+
+                {/* Complete Address */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#18572c]">Complete Address *</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="123 Main St, Brgy. San Jose"
+                    value={formData.address}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                     className="w-full px-4 py-3.5 rounded-xl bg-white border border-[#D4AF37]/40 text-sm text-[#18572c] placeholder:text-[#18572c]/40 outline-none focus:border-[#cf030f] focus:ring-2 focus:ring-[#cf030f]/20 transition-all shadow-sm font-medium"
                   />
                 </div>

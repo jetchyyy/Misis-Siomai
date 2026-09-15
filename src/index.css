@@ -27,6 +27,15 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   background: #BE123C;
 }
 
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 /* Glassmorphism */
 .glass-nav {
   background: rgba(255, 253, 247, 0.85);

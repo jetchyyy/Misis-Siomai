@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Flame, Star, ShoppingBag, ArrowRight, Sparkles } from 'lucide-react';
 import { useCMS } from '../context/CMSContext';
 import { motion } from 'framer-motion';
+import ProductModal from './ProductModal';
 
 export default function MenuShowcase({ onOpenInquiryModal }) {
   const { cms } = useCMS();
   const menuItems = cms.products || [];
   const [activeCategory, setActiveCategory] = useState('All');
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const categories = ['All', ...new Set(menuItems.map(item => item.category))];
 
@@ -100,12 +102,12 @@ export default function MenuShowcase({ onOpenInquiryModal }) {
           </div>
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-black/20 border border-white/10 shadow-inner">
+          <div className="flex overflow-x-auto scrollbar-hide items-center gap-2 p-1.5 rounded-2xl bg-black/20 border border-white/10 shadow-inner max-w-full">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                className={`whitespace-nowrap shrink-0 px-5 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
                   activeCategory === cat
                     ? 'bg-[#cf030f] text-white shadow-lg shadow-[#cf030f]/30'
                     : 'text-zinc-300 hover:text-white hover:bg-white/10'
@@ -118,18 +120,19 @@ export default function MenuShowcase({ onOpenInquiryModal }) {
         </div>
 
         {/* Menu Items Grid */}
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mt-8 sm:mt-12 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {filteredItems.map((item, idx) => (
             <div
               key={item.id || idx}
-              className="group rounded-[2rem] overflow-hidden bg-[#FAF3E3] border border-[#D4AF37]/40 shadow-xl hover:shadow-[0_20px_40px_-15px_rgba(207,3,15,0.4)] transition-all duration-500 flex flex-col justify-between hover:-translate-y-2 relative"
+              onClick={() => setSelectedProduct(item)}
+              className="group rounded-3xl sm:rounded-[2rem] overflow-hidden bg-[#FAF3E3] border border-[#D4AF37]/40 shadow-xl hover:shadow-[0_20px_40px_-15px_rgba(207,3,15,0.4)] transition-all duration-500 flex flex-col justify-between hover:-translate-y-2 relative cursor-pointer"
             >
               {/* Inner subtle gold border framing */}
-              <div className="absolute inset-1.5 border border-[#D4AF37]/30 rounded-[1.6rem] pointer-events-none z-10"></div>
+              <div className="absolute inset-1 sm:inset-1.5 border border-[#D4AF37]/30 rounded-[1.3rem] sm:rounded-[1.6rem] pointer-events-none z-10"></div>
 
               <div>
                 {/* Image Box */}
-                <div className="relative h-56 overflow-hidden bg-[#E8DCC4]">
+                <div className="relative h-40 sm:h-56 overflow-hidden bg-[#E8DCC4]">
                   <img
                     src={item.image_url || 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&q=80&w=600'}
                     alt={item.name}
@@ -146,38 +149,30 @@ export default function MenuShowcase({ onOpenInquiryModal }) {
                        <div className="absolute -bottom-2 left-0 w-full h-3 bg-[#cf030f]" style={{ clipPath: 'polygon(0 0, 50% 100%, 100% 0)' }}></div>
                     </div>
                   )}
-                  <span className="absolute bottom-4 right-5 px-4 py-1.5 rounded-full bg-[#18572c] text-[#D4AF37] font-black text-sm shadow-md border border-[#D4AF37]/40 z-20">
-                    {item.price}
-                  </span>
                 </div>
 
                 {/* Info Content */}
-                <div className="px-7 pt-1 pb-4 space-y-3 relative z-20">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#cf030f]">{item.category}</span>
-                  <h3 className="font-serif font-black text-2xl text-[#18572c] group-hover:text-[#cf030f] transition-colors leading-tight">
+                <div className="px-4 sm:px-7 pt-1 pb-4 space-y-1.5 sm:space-y-3 relative z-20">
+                  <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#cf030f]">{item.category}</span>
+                  <h3 className="font-serif font-black text-lg sm:text-2xl text-[#18572c] group-hover:text-[#cf030f] transition-colors leading-tight">
                     {item.name}
                   </h3>
-                  <p className="text-sm text-zinc-700 line-clamp-2 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-zinc-700 line-clamp-2 leading-relaxed">
                     {item.description}
                   </p>
                 </div>
-              </div>
-
-              {/* Order / Inquiry Action */}
-              <div className="p-6 pt-0 mt-2 relative z-20">
-                <button
-                  onClick={() => onOpenInquiryModal('bulk_order', item.name)}
-                  className="w-full py-3.5 rounded-xl bg-[#cf030f] hover:bg-[#a6020c] text-white font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#cf030f]/20 hover:shadow-lg hover:shadow-[#cf030f]/40"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Order Bulk Supply</span>
-                </button>
               </div>
             </div>
           ))}
         </div>
 
       </motion.div>
+
+      <ProductModal 
+        isOpen={!!selectedProduct} 
+        onClose={() => setSelectedProduct(null)} 
+        product={selectedProduct} 
+      />
     </section>
   );
 }

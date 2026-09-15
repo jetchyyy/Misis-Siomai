@@ -1,14 +1,27 @@
-import React from 'react';
-import { Store, Check, ArrowRight, ShieldCheck, DollarSign, Award, Zap } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Store, Check, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCMS } from '../context/CMSContext';
 import { motion } from 'framer-motion';
 
 export default function FranchisePackages({ onSelectPackage }) {
   const { cms } = useCMS();
   const packages = cms.packages || [];
+  const carouselRef = useRef(null);
+
+  const scrollLeft = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: -380, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: 380, behavior: 'smooth' });
+    }
+  };
 
   return (
-    <section id="franchise" className="py-20 md:py-32 bg-[#FAF3E3] relative overflow-hidden">
+    <section id="franchise" className="py-20 md:py-32 bg-[#FAF3E3] relative overflow-hidden group">
       
       {/* Decorative Gold Rings (Moon Gate styling) */}
       <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full border-[2px] border-[#D4AF37]/20 pointer-events-none"></div>
@@ -48,50 +61,31 @@ export default function FranchisePackages({ onSelectPackage }) {
           </p>
         </div>
 
-        {/* Feature Highlights Banner (Scroll Style) */}
-        <div className="mt-14 p-6 sm:p-8 bg-[#FAF3E3] border-y-4 border-x border-[#D4AF37] shadow-sm rounded-xl grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left relative overflow-hidden">
-          {/* Subtle pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:20px_20px] opacity-10"></div>
+        
+        {/* Packages Carousel Container */}
+        <div className="relative mt-8">
+          {/* Navigation Arrows */}
+          <button 
+            onClick={scrollLeft}
+            className="hidden md:flex absolute top-1/2 -left-4 lg:-left-12 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center text-[#18572c] hover:bg-[#18572c] hover:text-white transition-all z-30 border border-[#D4AF37]/30"
+          >
+            <ChevronLeft className="w-6 h-6 ml-[-2px]" />
+          </button>
+          
+          <button 
+            onClick={scrollRight}
+            className="hidden md:flex absolute top-1/2 -right-4 lg:-right-12 -translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center text-[#18572c] hover:bg-[#18572c] hover:text-white transition-all z-30 border border-[#D4AF37]/30"
+          >
+            <ChevronRight className="w-6 h-6 mr-[-2px]" />
+          </button>
 
-          <div className="flex items-center gap-4 justify-center md:justify-start relative z-10">
-            <div className="w-14 h-14 rounded-full border-2 border-[#D4AF37] bg-white text-[#cf030f] flex items-center justify-center shrink-0 shadow-sm">
-              <DollarSign className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-serif font-black text-lg text-[#18572c]">₱0 Royalty Fees</h4>
-              <p className="text-sm text-zinc-600 mt-1">Keep 100% of your store net profits every month.</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 justify-center md:justify-start relative z-10">
-            <div className="w-14 h-14 rounded-full border-2 border-[#D4AF37] bg-white text-[#cf030f] flex items-center justify-center shrink-0 shadow-sm">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-serif font-black text-lg text-[#18572c]">Turnkey Setup</h4>
-              <p className="text-sm text-zinc-600 mt-1">Includes cart, equipment, initial stocks & training.</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 justify-center md:justify-start relative z-10">
-            <div className="w-14 h-14 rounded-full border-2 border-[#D4AF37] bg-white text-[#cf030f] flex items-center justify-center shrink-0 shadow-sm">
-              <Award className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-serif font-black text-lg text-[#18572c]">High Profit Margins</h4>
-              <p className="text-sm text-zinc-600 mt-1">Average 45% - 60% gross profit margin per order.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Packages Grid */}
-        <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-          {packages.map((pkg, idx) => {
+          <div ref={carouselRef} className="pt-8 px-4 flex overflow-x-auto snap-x snap-mandatory gap-8 pb-8 scrollbar-hide">
+            {packages.map((pkg, idx) => {
             const isPopular = pkg.is_popular;
             return (
               <div
                 key={pkg.id || idx}
-                className={`rounded-[2rem] p-8 flex flex-col justify-between transition-all duration-500 relative border ${
+                className={`min-w-[85vw] md:min-w-[350px] lg:min-w-[380px] snap-center rounded-[2rem] p-8 flex flex-col justify-between transition-all duration-500 relative border ${
                   isPopular 
                     ? 'bg-gradient-to-b from-[#cf030f] to-[#8a020a] border-[#D4AF37] shadow-[0_20px_40px_-15px_rgba(207,3,15,0.4)] hover:-translate-y-2' 
                     : 'bg-white border-[#D4AF37]/30 shadow-xl hover:shadow-2xl hover:border-[#D4AF37] hover:-translate-y-2'
@@ -108,7 +102,7 @@ export default function FranchisePackages({ onSelectPackage }) {
                 <div className="relative z-10">
                   <div className="flex items-center justify-between mb-4">
                     <div className={`w-14 h-14 rounded-full flex items-center justify-center border ${
-                      isPopular ? 'bg-[#cf030f] border-[#D4AF37] text-[#D4AF37]' : 'bg-[#FAF3E3] border-[#D4AF37]/30 text-[#cf030f]'
+                      isPopular ? 'bg-[#8a020a] border-[#D4AF37] text-[#D4AF37]' : 'bg-[#FAF3E3] border-[#D4AF37]/30 text-[#cf030f]'
                     }`}>
                       <Store className="w-6 h-6" />
                     </div>
@@ -124,21 +118,9 @@ export default function FranchisePackages({ onSelectPackage }) {
                   <h3 className={`font-serif font-black text-3xl mt-4 ${isPopular ? 'text-white' : 'text-[#18572c]'}`}>
                     {pkg.name}
                   </h3>
-                  <p className={`text-sm mt-3 min-h-[48px] leading-relaxed ${isPopular ? 'text-zinc-200' : 'text-zinc-600'}`}>
+                  <p className={`text-sm mt-3 min-h-[80px] leading-relaxed ${isPopular ? 'text-zinc-200' : 'text-zinc-600'}`}>
                     {pkg.description}
                   </p>
-
-                  {/* Price */}
-                  <div className={`mt-8 p-5 rounded-2xl border ${
-                    isPopular ? 'bg-[#8a020a]/50 border-[#D4AF37]/30' : 'bg-[#FAF3E3] border-[#D4AF37]/30'
-                  }`}>
-                    <span className={`text-[10px] font-black uppercase tracking-widest block mb-1 ${isPopular ? 'text-[#D4AF37]' : 'text-zinc-500'}`}>
-                      All-In Investment
-                    </span>
-                    <div className={`font-serif font-black text-4xl sm:text-4xl ${isPopular ? 'text-white' : 'text-[#cf030f]'}`}>
-                      {pkg.price}
-                    </div>
-                  </div>
 
                   {/* Inclusions */}
                   <div className="mt-8 space-y-4">
@@ -166,13 +148,30 @@ export default function FranchisePackages({ onSelectPackage }) {
                         : 'bg-[#cf030f] hover:bg-[#a6020c] text-white hover:shadow-lg hover:shadow-[#cf030f]/30'
                     }`}
                   >
-                    <span>Apply for {pkg.name}</span>
+                    <span>Inquire Now</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             );
           })}
+          </div>
+
+          {/* Mobile Arrows */}
+          <div className="flex md:hidden justify-center gap-4 mt-2">
+            <button 
+              onClick={scrollLeft}
+              className="w-12 h-12 bg-white rounded-full shadow-md flex items-center justify-center text-[#18572c] border border-[#D4AF37]/30"
+            >
+              <ChevronLeft className="w-6 h-6 ml-[-2px]" />
+            </button>
+            <button 
+              onClick={scrollRight}
+              className="w-12 h-12 bg-white rounded-full shadow-md flex items-center justify-center text-[#18572c] border border-[#D4AF37]/30"
+            >
+              <ChevronRight className="w-6 h-6 mr-[-2px]" />
+            </button>
+          </div>
         </div>
 
       </motion.div>
