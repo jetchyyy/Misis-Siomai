@@ -77,3 +77,4 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
 }
+@variant dark (&:where(.dark, .dark *));
