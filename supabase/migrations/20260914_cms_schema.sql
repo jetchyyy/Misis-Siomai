@@ -7,6 +7,12 @@
 
 CREATE SCHEMA IF NOT EXISTS cms;
 
+-- Grant API roles permission to use schema cms
+GRANT USAGE ON SCHEMA cms TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA cms TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA cms TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA cms GRANT ALL ON TABLES TO anon, authenticated, service_role;
+
 -- 1. Site Settings (Home, About, Contact, Branding)
 CREATE TABLE IF NOT EXISTS cms.site_settings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
