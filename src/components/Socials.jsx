@@ -124,7 +124,7 @@ export default function Socials({ isStandalonePage = false, onOpenFranchiseModal
     : events.filter(e => e.category === activeCategory);
 
   return (
-    <section className="py-20 sm:py-28 bg-[#FAF7F2] relative overflow-hidden text-zinc-800">
+    <section id="socials" className="py-20 sm:py-28 bg-[#FAF7F2] relative overflow-hidden text-zinc-800">
       {/* Background Decorative Accents */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-[#18572c]/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#cf030f]/5 rounded-full blur-3xl pointer-events-none" />
